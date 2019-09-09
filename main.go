@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+var (
+	threeSeconds = 3000000000
+)
+
 func main() {
 	ping("Gordon's phone", "192.168.1.216")
 	ping("Dad's phone", "192.168.1.214")
@@ -18,6 +22,8 @@ func main() {
 
 func ping(name string, host string) {
 	pingPing := fastping.NewPinger()
+	pingPing.MaxRTT = time.Duration(threeSeconds)
+
 	ra, err := net.ResolveIPAddr("ip4:icmp", host)
 	if err != nil {
 		fmt.Println(err)
@@ -26,11 +32,10 @@ func ping(name string, host string) {
 
 	pingPing.AddIPAddr(ra)
 	pingPing.OnRecv = func(addr *net.IPAddr, duration time.Duration) {
-		fmt.Println(name, "Active")
+		fmt.Println(name, "is active")
 	}
 
 	pingPing.OnIdle = func() {
-		//fmt.Println(name, "Finished")
 	}
 	err = pingPing.Run()
 	if err != nil {
