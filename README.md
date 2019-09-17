@@ -1,4 +1,4 @@
-# Who is home discord bot
+# Who is home Slack bot
 
 ## Roadmap
 
