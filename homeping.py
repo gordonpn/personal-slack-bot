@@ -16,22 +16,22 @@ addresses = {
 }
 
 
-def ping_phones():
+def ping_all():
+    active = {}
     with open(os.devnull, "wb") as limbo:
         for name, value in addresses.items():
             ip = "192.168.1.{0}".format(value)
             result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "2", ip], stdout=limbo, stderr=limbo).wait()
             # if result is anything but 1, ping returns 0 when successful
             # in python, 1 is true
-            if result:
-                print(name, "inactive")
-            else:
-                print(name, "active")
+            if result == 0:
+                active.add(name)
+    return active
 
 
 def reply_hello(data, web_client):
     channel_id = data['channel']
-    thread_ts = data['ts']
+    # thread_ts = data['ts']
     user = data['user']
 
     web_client.chat_postMessage(
@@ -41,13 +41,38 @@ def reply_hello(data, web_client):
     )
 
 
+def reply_ping_all(data, web_client):
+    channel_id = data['channel']
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text="Let me check that for you"
+    )
+
+    active = ping_all()
+    if not active:
+        message = "Nobody is home currently."
+    else:
+        seperator = ', '
+        active_string = seperator.join(active)
+        message = active_string + " are home currently."
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text=message
+    )
+
+
 @slack.RTMClient.run_on(event='message')
-def say_hello(**payload):
+def reply_to_message(**payload):
     data = payload['data']
     web_client = payload['web_client']
     rtm_client = payload['rtm_client']
     if 'Hello' in data['text']:
         reply_hello(data, web_client)
+
+    if 'who' in data['text'] and 'home' in data['text']:
+        reply_ping_all(data, web_client)
+
 
 if __name__ == "__main__":
     logger = logging.getLogger()
