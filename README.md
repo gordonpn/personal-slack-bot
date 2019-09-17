@@ -3,4 +3,4 @@
 ## Roadmap
 
 * [ ]  Rewrite in Python
-* [ ]  Create a Discord Bot to communicate the information
+* [ ]  Develop a Discord Bot to communicate the information
