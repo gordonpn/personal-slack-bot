@@ -2,5 +2,5 @@
 
 ## Roadmap
 
-* [ ]  Rewrite in Python
-* [ ]  Develop a Discord Bot to communicate the information
+* [x]  Rewrite in Python
+* [ ]  Develop a Slack Bot to communicate the information
