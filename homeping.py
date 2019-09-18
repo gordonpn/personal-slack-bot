@@ -16,12 +16,12 @@ addresses = {
 }
 
 
-def ping_all():
+def ping_all(addresses):
     active = set()
     with open(os.devnull, "wb") as limbo:
         for name, value in addresses.items():
             ip = "192.168.1.{0}".format(value)
-            result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "2", ip], stdout=limbo, stderr=limbo).wait()
+            result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
             # if result is anything but 1, ping returns 0 when successful
             # in python, 1 is true
             if result == 0:
@@ -43,12 +43,15 @@ def reply_hello(data, web_client):
 
 def reply_ping_all(data, web_client):
     channel_id = data['channel']
-    web_client.chat_postMessage(
-        channel=channel_id,
-        text="Let me check that for you."
-    )
 
-    active = ping_all()
+    post_generic_message(channel_id, web_client)
+
+    active = ping_all(addresses)
+
+    post_ping_reply(channel_id, web_client, active)
+
+
+def post_ping_reply(channel_id, web_client, active):
     if not active:
         message = "Nobody is home currently."
     elif len(active) == 1:
@@ -64,6 +67,30 @@ def reply_ping_all(data, web_client):
     )
 
 
+def reply_ping_subset(data, web_client):
+    channel_id = data['channel']
+    text = data['text'].lower()
+
+    post_generic_message(channel_id, web_client)
+
+    subset_addresses = {}
+
+    for name, value in addresses.items():
+        if name.lower() in text:
+            subset_addresses[name] = value
+
+    active = ping_all(subset_addresses)
+
+    post_ping_reply(channel_id, web_client, active)
+
+
+def post_generic_message(channel_id, web_client):
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text="Let me check that for you."
+    )
+
+
 @slack.RTMClient.run_on(event='message')
 def reply_to_message(**payload):
     data = payload['data']
@@ -76,6 +103,8 @@ def reply_to_message(**payload):
 
     if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
+    elif 'home' in text and 'currently' not in text:
+        reply_ping_subset(data, web_client)
 
 
 if __name__ == "__main__":
