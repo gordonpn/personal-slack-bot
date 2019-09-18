@@ -17,7 +17,7 @@ addresses = {
 
 
 def ping_all():
-    active = {}
+    active = set()
     with open(os.devnull, "wb") as limbo:
         for name, value in addresses.items():
             ip = "192.168.1.{0}".format(value)
@@ -45,12 +45,14 @@ def reply_ping_all(data, web_client):
     channel_id = data['channel']
     web_client.chat_postMessage(
         channel=channel_id,
-        text="Let me check that for you"
+        text="Let me check that for you."
     )
 
     active = ping_all()
     if not active:
         message = "Nobody is home currently."
+    elif len(active) == 1:
+        message = "".join(active) + " is home currently."
     else:
         seperator = ', '
         active_string = seperator.join(active)
@@ -67,10 +69,12 @@ def reply_to_message(**payload):
     data = payload['data']
     web_client = payload['web_client']
     rtm_client = payload['rtm_client']
-    if 'Hello' in data['text']:
+    text = data['text'].lower()
+
+    if 'hello' in text:
         reply_hello(data, web_client)
 
-    if 'who' in data['text'] and 'home' in data['text']:
+    if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
 
 
