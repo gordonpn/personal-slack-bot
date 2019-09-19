@@ -36,7 +36,8 @@ def reply_hello(data, web_client):
 
     web_client.chat_postMessage(
         channel=channel_id,
-        text=f"Hi <@{user}>!"
+        text=f"Hi <@{user}>!",
+        as_user=true
         # thread_ts=thread_ts
     )
 
@@ -63,7 +64,8 @@ def post_ping_reply(channel_id, web_client, active):
 
     web_client.chat_postMessage(
         channel=channel_id,
-        text=message
+        text=message,
+        as_user=true
     )
 
 
@@ -87,7 +89,8 @@ def reply_ping_subset(data, web_client):
 def post_generic_message(channel_id, web_client):
     web_client.chat_postMessage(
         channel=channel_id,
-        text="Let me check that for you."
+        text="Let me check that for you.",
+        as_user=true
     )
 
 
