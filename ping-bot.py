@@ -94,20 +94,52 @@ def post_generic_message(channel_id, web_client):
     )
 
 
+def reply_watch_ping(data, web_client):
+    channel_id = data['channel']
+    text = data['text'].lower()
+
+    for name, value in addresses.items():
+        if name.lower() in text:
+            web_client.chat_postMessage(
+                channel=channel_id,
+                text="I will keep a watch on {} for you.".format(name),
+                as_user=True
+            )
+            watch_ping(data, web_client, name, value)
+
+
+def watch_ping(data, web_client, name, value):
+    success=False
+    while (not success):
+        with open(os.devnull, "wb") as limbo:
+            ip = "192.168.1.{0}".format(value)
+            result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
+            if result == 0:
+                active = set()
+                active.add(name)
+                post_ping_reply(data['channel'], web_client, active)
+                success=True
+            time.sleep(10)
+
+
 @slack.RTMClient.run_on(event='message')
 def reply_to_message(**payload):
     data = payload['data']
     web_client = payload['web_client']
     rtm_client = payload['rtm_client']
     text = data['text'].lower()
+    logger.debug("Parsing: {}".format(text))
 
     if 'hello' in text:
         reply_hello(data, web_client)
 
     if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
-    elif 'home' in text and 'currently' not in text:
-        reply_ping_subset(data, web_client)
+    elif 'currently' not in text:
+        if 'home' in text:
+            reply_ping_subset(data, web_client)
+        elif 'watch' in text:
+            reply_watch_ping(data, web_client)
 
 
 if __name__ == "__main__":
