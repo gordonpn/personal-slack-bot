@@ -7,6 +7,7 @@ import json
 import psutil
 import slack
 import threading
+import random
 
 addresses = {
     "Mum": 30,
@@ -19,12 +20,11 @@ addresses = {
 
 def ping_all(addresses):
     active = set()
+    logger.debug("attempting to ping all addresses")
     with open(os.devnull, "wb") as limbo:
         for name, value in addresses.items():
             ip = "192.168.1.{0}".format(value)
             result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
-            # if result is anything but 1, ping returns 0 when successful
-            # in python, 1 is true
             if result == 0:
                 active.add(name)
     return active
@@ -32,14 +32,34 @@ def ping_all(addresses):
 
 def reply_hello(data, web_client):
     channel_id = data['channel']
-    # thread_ts = data['ts']
     user = data['user']
 
     web_client.chat_postMessage(
         channel=channel_id,
         text=f"Hi <@{user}>!",
         as_user=True
-        # thread_ts=thread_ts
+    )
+
+
+def reply_np(data, web_client):
+    channel_id = data['channel']
+    user = data['user']
+    list_replies = [
+        "You're very welcome",
+        "Yeah, whatever",
+        "You got it bro",
+        "I gotchu bruh",
+        "Anything for you",
+        "Don't mention it",
+        "No problem",
+        "Don't worry about it"
+    ]
+    message = random.choice(list_replies)
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text=message,
+        as_user=True
     )
 
 
@@ -139,7 +159,7 @@ def reply_to_message(**payload):
         reply_hello(data, web_client)
 
     if 'thanks' in text or 'thank you' in text:
-        reply_
+        reply_np(data, web_client)
 
     if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
