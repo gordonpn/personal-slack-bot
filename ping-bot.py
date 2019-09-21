@@ -6,6 +6,7 @@ import time
 import json
 import psutil
 import slack
+import threading
 
 addresses = {
     "Mum": 30,
@@ -105,7 +106,9 @@ def reply_watch_ping(data, web_client):
                 text="I will keep a watch on {} for you.".format(name),
                 as_user=True
             )
-            watch_ping(data, web_client, name, value)
+            logger.debug("starting watch thread for {}".format(name))
+            watch_thread = threading.Thread(target=watch_ping, args=(data, web_client, name, value))
+            watch_thread.start()
 
 
 def watch_ping(data, web_client, name, value):
@@ -113,12 +116,14 @@ def watch_ping(data, web_client, name, value):
     while (not success):
         with open(os.devnull, "wb") as limbo:
             ip = "192.168.1.{0}".format(value)
+            logger.debug("attempting to ping {}".format(name))
             result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
             if result == 0:
                 active = set()
                 active.add(name)
                 post_ping_reply(data['channel'], web_client, active)
                 success=True
+            logger.debug("no success, retrying in 10 seconds...")
             time.sleep(10)
 
 
@@ -128,17 +133,20 @@ def reply_to_message(**payload):
     web_client = payload['web_client']
     rtm_client = payload['rtm_client']
     text = data['text'].lower()
-    logger.debug("Parsing: {}".format(text))
+    logger.debug("parsing: {}".format(text))
 
     if 'hello' in text:
         reply_hello(data, web_client)
+
+    if 'thanks' in text or 'thank you' in text:
+        reply_
 
     if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
     elif 'currently' not in text:
         if 'home' in text:
             reply_ping_subset(data, web_client)
-        elif 'watch' in text:
+        elif 'watch' in text and 'for you' not in text:
             reply_watch_ping(data, web_client)
 
 
