@@ -20,4 +20,6 @@ pip install -r requirements.txt
 * [x]  Info on uptime
 * [x]  Info on cpu load
 * [ ]  Refactor code to make more object-oriented
+* [ ]  watch everyone feature
+* [ ]  stop all threads or stop one thread
 * [ ]  Change the long if else for a loop?
