@@ -8,6 +8,8 @@ import psutil
 import slack
 import threading
 import random
+from uptime import uptime
+from gpiozero import CPUTemperature
 
 addresses = {
     "Mum": 30,
@@ -55,6 +57,51 @@ def reply_np(data, web_client):
         "Don't worry about it"
     ]
     message = random.choice(list_replies)
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text=message,
+        as_user=True
+    )
+
+
+def reply_cpu_load(data, web_client):
+    channel_id = data['channel']
+    user = data['user']
+
+    cpu_load = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()]
+
+    message = "I've been working at {}% in the last 15 minutes".format(cpu_load[2])
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text=message,
+        as_user=True
+    )
+
+
+def reply_uptime(data, web_client):
+    channel_id = data['channel']
+    user = data['user']
+
+    uptime_text = round((uptime() / 86400), 2)
+
+    message = "I've up for {} days man".format(uptime_text)
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text=message,
+        as_user=True
+    )
+
+
+def reply_temp(data, web_client):
+    channel_id = data['channel']
+    user = data['user']
+
+    cpu_temp = CPUTemperature()
+
+    message = "Current temperatue is {} degrees Celsius".format(cpu_temp.temperature)
 
     web_client.chat_postMessage(
         channel=channel_id,
@@ -160,6 +207,15 @@ def reply_to_message(**payload):
 
     if 'thanks' in text or 'thank you' in text:
         reply_np(data, web_client)
+
+    if 'cpu' in text and 'load' in text:
+        reply_cpu_load(data, web_client)
+
+    if 'uptime' in text:
+        reply_uptime(data, web_client)
+
+    if 'how hot' in text:
+        reply_temp(data, web_client)
 
     if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
