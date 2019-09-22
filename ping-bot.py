@@ -214,8 +214,8 @@ def reply_to_message(**payload):
     if 'uptime' in text:
         reply_uptime(data, web_client)
 
-    if 'how hot' in text:
-        reply_temp(data, web_client)
+    # if 'how hot' in text:
+    #     reply_temp(data, web_client)
 
     if 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
