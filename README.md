@@ -20,3 +20,4 @@ pip install -r requirements.txt
 * [x]  Info on uptime
 * [x]  Info on cpu load
 * [ ]  Refactor code to make more object-oriented
+* [ ]  Change the long if else for a loop?

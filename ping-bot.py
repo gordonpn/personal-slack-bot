@@ -234,6 +234,7 @@ def reply_to_message(**payload):
     rtm_client = payload['rtm_client']
     text = data['text'].lower()
     logger.debug("parsing: {}".format(text))
+    is_not_bot = data['user'] != "UN99BD0CR"
 
     if 'hello' in text:
         reply_hello(data, web_client)
@@ -248,13 +249,13 @@ def reply_to_message(**payload):
         exit()
     elif 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
-    elif 'currently' not in text:
-        if 'home' in text:
-            reply_ping_subset(data, web_client)
-        elif 'watch' in text and 'for you' not in text:
-            reply_watch_ping(data, web_client)
+    elif 'home' in text and is_not_bot:
+        reply_ping_subset(data, web_client)
+    elif 'watch' in text and is_not_bot:
+        reply_watch_ping(data, web_client)
     else:
-        reply_what(data, web_client)
+        if is_not_bot:
+            reply_what(data, web_client)
 
 
 if __name__ == "__main__":
