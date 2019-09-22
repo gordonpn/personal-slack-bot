@@ -162,6 +162,17 @@ def post_generic_message(channel_id, web_client):
     )
 
 
+def reply_reboot(data, web_client):
+    channel_id = data['channel']
+    user = data['user']
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text="Ight Imma Head Out",
+        as_user=True
+    )
+
+
 def reply_watch_ping(data, web_client):
     channel_id = data['channel']
     text = data['text'].lower()
@@ -213,6 +224,10 @@ def reply_to_message(**payload):
 
     if 'uptime' in text:
         reply_uptime(data, web_client)
+
+    if 'fuck you bender' in text or 'reboot' in text:
+        reply_reboot(data, web_client)
+        exit()
 
     # if 'how hot' in text:
     #     reply_temp(data, web_client)
