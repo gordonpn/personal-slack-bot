@@ -65,6 +65,28 @@ def reply_np(data, web_client):
     )
 
 
+def reply_what(data, web_client):
+    channel_id = data['channel']
+    user = data['user']
+    list_replies = [
+        "What the hell are you saying man",
+        "what language is this?",
+        "wat?",
+        "huh?",
+        "I don't get it",
+        "Say what now?",
+        "Yeah... no",
+        "Just gonna ignore that"
+    ]
+    message = random.choice(list_replies)
+
+    web_client.chat_postMessage(
+        channel=channel_id,
+        text=message,
+        as_user=True
+    )
+
+
 def reply_cpu_load(data, web_client):
     channel_id = data['channel']
     user = data['user']
@@ -215,30 +237,24 @@ def reply_to_message(**payload):
 
     if 'hello' in text:
         reply_hello(data, web_client)
-
-    if 'thanks' in text or 'thank you' in text:
+    elif 'thanks' in text or 'thank you' in text:
         reply_np(data, web_client)
-
-    if 'cpu' in text and 'load' in text:
+    elif 'cpu' in text and 'load' in text:
         reply_cpu_load(data, web_client)
-
-    if 'uptime' in text:
+    elif 'uptime' in text:
         reply_uptime(data, web_client)
-
-    if 'fuck you bender' in text or 'reboot' in text:
+    elif 'fuck you bender' in text or 'reboot' in text:
         reply_reboot(data, web_client)
         exit()
-
-    # if 'how hot' in text:
-    #     reply_temp(data, web_client)
-
-    if 'who' in text and 'home' in text:
+    elif 'who' in text and 'home' in text:
         reply_ping_all(data, web_client)
     elif 'currently' not in text:
         if 'home' in text:
             reply_ping_subset(data, web_client)
         elif 'watch' in text and 'for you' not in text:
             reply_watch_ping(data, web_client)
+    else:
+        reply_what(data, web_client)
 
 
 if __name__ == "__main__":
