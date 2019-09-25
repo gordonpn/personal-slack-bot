@@ -256,3 +256,7 @@ venv/lib/python3.7/site-packages/yarl/_quoting.c
 venv/lib/python3.7/site-packages/yarl/_quoting.pyx
 venv/lib/python3.7/site-packages/yarl/py.typed
 venv/lib/python3.7/site-packages/yarl/quoting.py
+venv/lib/python3.7/site-packages/__pycache__/
+venv/lib/python3.7/site-packages/speedtest.py
+venv/lib/python3.7/site-packages/speedtest_cli-2.1.2.dist-info/
+venv/lib/python3.7/site-packages/speedtest_cli.py
