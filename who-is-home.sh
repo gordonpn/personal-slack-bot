@@ -1,1 +1,0 @@
-sudo ./who-is-home-cli
