@@ -184,7 +184,7 @@ class Bot:
                 if result == 0:
                     active = set()
                     active.add(name)
-                    post_ping_reply(active)
+                    self.post_ping_reply(active)
                     success = True
                 logger.debug("no success, retrying in 10 seconds...")
                 time.sleep(10)
