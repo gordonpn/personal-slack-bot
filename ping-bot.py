@@ -1,4 +1,5 @@
 import subprocess
+from subprocess import call
 import logging
 import os
 import re
@@ -9,7 +10,7 @@ import slack
 import threading
 import random
 from uptime import uptime
-from gpiozero import CPUTemperature
+from psutil import virtual_memory
 
 addresses = {
     "Mum": 30,
@@ -20,13 +21,13 @@ addresses = {
 }
 bot_id = "UN99BD0CR"
 
+
 class Bot:
     def __init__(self, data, web_client):
         self.data = data
         self.web_client = web_client
         self.channel_id = data['channel']
         self.user = data['user']
-
 
     def ping_all(self, addresses):
         active = set()
@@ -39,14 +40,12 @@ class Bot:
                     active.add(name)
         return active
 
-
     def reply_hello(self):
         self.web_client.chat_postMessage(
             channel=self.channel_id,
             text=f"Hi <@{self.user}>!",
             as_user=True
         )
-
 
     def reply_np(self):
         list_replies = [
@@ -67,7 +66,6 @@ class Bot:
             as_user=True
         )
 
-
     def reply_what(self):
         list_replies = [
             "what the hell are you saying man",
@@ -87,7 +85,6 @@ class Bot:
             as_user=True
         )
 
-
     def reply_cpu_load(self):
         cpu_load = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()]
 
@@ -98,7 +95,6 @@ class Bot:
             text=message,
             as_user=True
         )
-
 
     def reply_uptime(self):
         uptime_text = round((uptime() / 86400), 2)
@@ -111,26 +107,12 @@ class Bot:
             as_user=True
         )
 
-
-    def reply_temp(self):
-        cpu_temp = CPUTemperature()
-
-        message = "current temperatue is {} degrees Celsius".format(cpu_temp.temperature)
-
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
-
-
     def reply_ping_all(self):
         self.post_generic_message()
 
         active = self.ping_all(addresses)
 
         self.post_ping_reply(active)
-
 
     def post_ping_reply(self, active):
         if not active:
@@ -148,7 +130,6 @@ class Bot:
             as_user=True
         )
 
-
     def reply_ping_subset(self):
         text = self.data['text'].lower()
 
@@ -164,7 +145,6 @@ class Bot:
 
         self.post_ping_reply(active)
 
-
     def post_generic_message(self):
         self.web_client.chat_postMessage(
             channel=self.channel_id,
@@ -172,14 +152,13 @@ class Bot:
             as_user=True
         )
 
-
     def reply_reboot(self):
         self.web_client.chat_postMessage(
             channel=self.channel_id,
             text="ight imma head out",
             as_user=True
         )
-
+        exit()
 
     def reply_watch_ping(self):
         text = self.data['text'].lower()
@@ -195,9 +174,8 @@ class Bot:
                 watch_thread = threading.Thread(target=self.watch_ping, args=(name, value))
                 watch_thread.start()
 
-
     def watch_ping(self, name, value):
-        success=False
+        success = False
         while (not success):
             with open(os.devnull, "wb") as limbo:
                 ip = "192.168.1.{0}".format(value)
@@ -207,7 +185,7 @@ class Bot:
                     active = set()
                     active.add(name)
                     post_ping_reply(active)
-                    success=True
+                    success = True
                 logger.debug("no success, retrying in 10 seconds...")
                 time.sleep(10)
 
@@ -221,6 +199,31 @@ class Bot:
             logger.debug("starting watch thread for {}".format(name))
             watch_thread = threading.Thread(target=self.watch_ping, args=(name, value))
             watch_thread.start()
+
+    def reply_scrape(self):
+        self.web_client.chat_postMessage(
+            channel=self.channel_id,
+            text="updating your moodle courses folder...",
+            as_user=True
+        )
+        moodle_scraper = '/mnt/pidrive/resilio-sync/jenkins/moodle-scraper/moodle-scraper.py'
+        call(['python3', moodle_scraper])
+
+    def reply_ram(self):
+        with open('/proc/meminfo') as file:
+            for line in file:
+                if 'MemFree' in line:
+                    free_mem_in_kb = line.split()[1]
+                    break
+
+        free_mem_in_mb = int(free_mem_in_kb / 1000);
+        message = "i have {} MB free in memory".format(free_mem_in_mb)
+
+        self.web_client.chat_postMessage(
+            channel=self.channel_id,
+            text=message,
+            as_user=True
+        )
 
 
 @slack.RTMClient.run_on(event='message')
@@ -243,11 +246,8 @@ def reply_to_message(**payload):
             bot.reply_cpu_load()
         elif 'uptime' in text:
             bot.reply_uptime()
-        elif 'reboot' in text and 'pi' in text:
-            bot.reply_reboot_pi()
         elif 'fuck you bender' in text or 'reboot' in text:
             bot.reply_reboot()
-            exit()
         elif 'who' in text and 'home' in text:
             bot.reply_ping_all()
         elif 'home' in text:
@@ -256,6 +256,10 @@ def reply_to_message(**payload):
             bot.reply_watch_everyone()
         elif 'watch' in text:
             bot.reply_watch_ping()
+        elif 'scrape' in text:
+            bot.reply_scrape()
+        elif 'ram' in text:
+            bot.reply_ram()
         else:
             bot.reply_what()
 
