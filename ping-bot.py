@@ -22,8 +22,10 @@ bot_id = "UN99BD0CR"
 
 class Bot:
     def __init__(self, data, web_client):
-        self.data = data;
-        self.web_client = web_client;
+        self.data = data
+        self.web_client = web_client
+        self.channel_id = data['channel']
+        self.user = data['user']
 
 
     def ping_all(self, addresses):
@@ -39,19 +41,14 @@ class Bot:
 
 
     def reply_hello(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
-
         self.web_client.chat_postMessage(
-            channel=channel_id,
-            text=f"Hi <@{user}>!",
+            channel=self.channel_id,
+            text=f"Hi <@{self.user}>!",
             as_user=True
         )
 
 
     def reply_np(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
         list_replies = [
             "you're very welcome",
             "yeah, whatever",
@@ -65,15 +62,13 @@ class Bot:
         message = random.choice(list_replies)
 
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text=message,
             as_user=True
         )
 
 
     def reply_what(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
         list_replies = [
             "what the hell are you saying man",
             "what language is this?",
@@ -87,60 +82,49 @@ class Bot:
         message = random.choice(list_replies)
 
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text=message,
             as_user=True
         )
 
 
     def reply_cpu_load(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
-
         cpu_load = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()]
 
         message = "i've been working at {}% in the last 15 minutes".format(cpu_load[2])
 
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text=message,
             as_user=True
         )
 
 
     def reply_uptime(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
-
         uptime_text = round((uptime() / 86400), 2)
 
         message = "i've up for {} days man".format(uptime_text)
 
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text=message,
             as_user=True
         )
 
 
     def reply_temp(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
-
         cpu_temp = CPUTemperature()
 
         message = "current temperatue is {} degrees Celsius".format(cpu_temp.temperature)
 
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text=message,
             as_user=True
         )
 
 
     def reply_ping_all(self):
-        channel_id = self.data['channel']
-
         self.post_generic_message()
 
         active = self.ping_all(addresses)
@@ -149,7 +133,6 @@ class Bot:
 
 
     def post_ping_reply(self, active):
-        channel_id = self.data['channel']
         if not active:
             message = "nobody is home currently."
         elif len(active) == 1:
@@ -160,14 +143,13 @@ class Bot:
             message = active_string + " are home currently."
 
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text=message,
             as_user=True
         )
 
 
     def reply_ping_subset(self):
-        channel_id = self.data['channel']
         text = self.data['text'].lower()
 
         self.post_generic_message()
@@ -184,33 +166,28 @@ class Bot:
 
 
     def post_generic_message(self):
-        channel_id = self.data['channel']
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text="let me check that for you.",
             as_user=True
         )
 
 
     def reply_reboot(self):
-        channel_id = self.data['channel']
-        user = self.data['user']
-
         self.web_client.chat_postMessage(
-            channel=channel_id,
+            channel=self.channel_id,
             text="ight imma head out",
             as_user=True
         )
 
 
     def reply_watch_ping(self):
-        channel_id = self.data['channel']
         text = self.data['text'].lower()
 
         for name, value in addresses.items():
             if name.lower() in text:
                 self.web_client.chat_postMessage(
-                    channel=channel_id,
+                    channel=self.channel_id,
                     text="i will keep a watch on {} for you.".format(name),
                     as_user=True
                 )
@@ -234,6 +211,17 @@ class Bot:
                 logger.debug("no success, retrying in 10 seconds...")
                 time.sleep(10)
 
+    def reply_watch_everyone(self):
+        for name, value in addresses.items():
+            self.web_client.chat_postMessage(
+                channel=self.channel_id,
+                text="i will keep a watch on {} for you.".format(name),
+                as_user=True
+            )
+            logger.debug("starting watch thread for {}".format(name))
+            watch_thread = threading.Thread(target=self.watch_ping, args=(name, value))
+            watch_thread.start()
+
 
 @slack.RTMClient.run_on(event='message')
 def reply_to_message(**payload):
@@ -255,6 +243,8 @@ def reply_to_message(**payload):
             bot.reply_cpu_load()
         elif 'uptime' in text:
             bot.reply_uptime()
+        elif 'reboot' in text and 'pi' in text:
+            bot.reply_reboot_pi()
         elif 'fuck you bender' in text or 'reboot' in text:
             bot.reply_reboot()
             exit()
@@ -262,6 +252,8 @@ def reply_to_message(**payload):
             bot.reply_ping_all()
         elif 'home' in text:
             bot.reply_ping_subset()
+        elif 'watch' in text and 'everyone' in text:
+            bot.reply_watch_everyone()
         elif 'watch' in text:
             bot.reply_watch_ping()
         else:
