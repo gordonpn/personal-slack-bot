@@ -1,5 +1,3 @@
 slackclient
 psutil
 uptime
-gpiozero
-CPU-temperature-monitor
