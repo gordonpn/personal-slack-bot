@@ -216,7 +216,7 @@ class Bot:
                     free_mem_in_kb = line.split()[1]
                     break
 
-        free_mem_in_mb = int(free_mem_in_kb / 1000);
+        free_mem_in_mb = int(int(free_mem_in_kb, 10) / 1000);
         message = "i have {} MB free in memory".format(free_mem_in_mb)
 
         self.web_client.chat_postMessage(
