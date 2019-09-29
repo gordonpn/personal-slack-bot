@@ -162,9 +162,13 @@ class Bot:
 
     def reply_watch_ping(self):
         text = self.data['text'].lower()
+        if 'everyone' in text:
+            everyone = True
+        else:
+            everyone: False
 
         for name, value in addresses.items():
-            if name.lower() in text:
+            if name.lower() in text or everyone:
                 self.web_client.chat_postMessage(
                     channel=self.channel_id,
                     text="i will keep a watch on {} for you.".format(name),
@@ -189,16 +193,6 @@ class Bot:
                 logger.debug("no success, retrying in 10 seconds...")
                 time.sleep(10)
 
-    def reply_watch_everyone(self):
-        for name, value in addresses.items():
-            self.web_client.chat_postMessage(
-                channel=self.channel_id,
-                text="i will keep a watch on {} for you.".format(name),
-                as_user=True
-            )
-            logger.debug("starting watch thread for {}".format(name))
-            watch_thread = threading.Thread(target=self.watch_ping, args=(name, value))
-            watch_thread.start()
 
     def reply_scrape(self):
         self.web_client.chat_postMessage(
@@ -252,8 +246,6 @@ def reply_to_message(**payload):
             bot.reply_ping_all()
         elif 'home' in text:
             bot.reply_ping_subset()
-        elif 'watch' in text and 'everyone' in text:
-            bot.reply_watch_everyone()
         elif 'watch' in text:
             bot.reply_watch_ping()
         elif 'scrape' in text:
