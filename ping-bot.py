@@ -1,16 +1,15 @@
-import subprocess
-from subprocess import call
 import logging
 import os
-import re
-import time
-import json
-import psutil
-import slack
-import threading
 import random
+import subprocess
+import threading
+import time
+from subprocess import call
+
+import psutil
+import requests
+import slack
 from uptime import uptime
-from psutil import virtual_memory
 
 addresses = {
     "Mum": 30,
@@ -193,15 +192,26 @@ class Bot:
                 logger.debug("no success, retrying in 10 seconds...")
                 time.sleep(10)
 
-
     def reply_scrape(self):
         self.web_client.chat_postMessage(
             channel=self.channel_id,
             text="updating your moodle courses folder...",
             as_user=True
         )
-        moodle_scraper = '/mnt/pidrive/resilio-sync/jenkins/moodle-scraper/moodle-scraper.py'
-        call(['python3', moodle_scraper])
+        # moodle_scraper = '/mnt/pidrive/resilio-sync/jenkins/moodle-scraper/moodle-scraper.py'
+        # call(['python3', moodle_scraper])
+
+        # jenkins_url = "http://gordonpn.asuscomm.com:57679/job/moodle-scraper/build"
+        # auth_data = {
+        #     'j_username': 'gordonpn',
+        #     'j_password': '116782a732b876cd6382f9baa5de88c6c2'
+        # }
+        # sesssion_request = requests.session()
+        try:
+            result = requests.post('http://gordonpn:116782a732b876cd6382f9baa5de88c6c2@http//gordonpn.asuscomm.com:57679/job/moodle-scraper/build')
+            logger.info("Jenkins POST status code: {}".format(result.status_code))
+        except Exception as e:
+            logger.error("Error with POST to Jenkins | {}".format(str(e)))
 
     def reply_ram(self):
         with open('/proc/meminfo') as file:
