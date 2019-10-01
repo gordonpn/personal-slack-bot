@@ -198,18 +198,13 @@ class Bot:
             text="updating your moodle courses folder...",
             as_user=True
         )
-        # moodle_scraper = '/mnt/pidrive/resilio-sync/jenkins/moodle-scraper/moodle-scraper.py'
-        # call(['python3', moodle_scraper])
-
-        # jenkins_url = "http://gordonpn.asuscomm.com:57679/job/moodle-scraper/build"
-        # auth_data = {
-        #     'j_username': 'gordonpn',
-        #     'j_password': '116782a732b876cd6382f9baa5de88c6c2'
-        # }
-        # sesssion_request = requests.session()
         try:
-            result = requests.post('http://gordonpn:116782a732b876cd6382f9baa5de88c6c2@http//gordonpn.asuscomm.com:57679/job/moodle-scraper/build')
+            result = requests.post('http://gordonpn:116782a732b876cd6382f9baa5de88c6c2@192.168.1.187:8080/job/moodle-scraper/build')
             logger.info("Jenkins POST status code: {}".format(result.status_code))
+            if result:
+                logger.info("Successful POST")
+            else:
+                logger.error("Unsuccessful POST")
         except Exception as e:
             logger.error("Error with POST to Jenkins | {}".format(str(e)))
 
