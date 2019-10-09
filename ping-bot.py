@@ -161,10 +161,9 @@ class Bot:
 
     def reply_watch_ping(self):
         text = self.data['text'].lower()
+        everyone = False
         if 'everyone' in text:
             everyone = True
-        else:
-            everyone: False
 
         for name, value in addresses.items():
             if name.lower() in text or everyone:
