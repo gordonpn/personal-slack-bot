@@ -7,6 +7,7 @@ import subprocess
 import threading
 import time
 from subprocess import call
+from configparser import ConfigParser
 
 import psutil
 import requests
@@ -193,8 +194,7 @@ class Bot:
             as_user=True
         )
         try:
-            result = requests.post(
-                'http://gordonpn:116782a732b876cd6382f9baa5de88c6c2@192.168.1.187:8080/job/moodle-scraper/build')
+            result = requests.post(url)
             logger.info("Jenkins POST status code: {}".format(result.status_code))
             if result:
                 logger.info("Successful POST")
@@ -228,11 +228,35 @@ def get_addresses():
             logger.info("loading addresses")
             with open(file_name, "r") as read_file:
                 addresses = json.load(read_file)
+                logger.info("loaded addresses successfully")
         except Exception as e:
             logger.error("Error getting addresses | {}".format(str(e)))
-            sys.exit()
+            sys.exit(-1)
 
     return addresses
+
+
+def get_config():
+    config_parser = ConfigParser()
+    file = "bot.conf"
+    url = ""
+    if os.path.exists(file):
+        config_parser.read(file)
+        logger.info("found config file successfully")
+    else:
+        sys.exit(-1)
+
+    try:
+        if config_parser.has_option('bot', 'url'):
+            url = config_parser.get('bot', 'url')
+            logger.info("found jenkins url")
+        else:
+            logger.error("could not find jenkins url")
+            sys.exit(-1)
+    except Exception as e:
+        logger.error("error while loading config file | {}".format(str(e)))
+
+    return url
 
 
 @slack.RTMClient.run_on(event='message')
@@ -277,5 +301,6 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
     addresses = get_addresses()
+    url = get_config()
     rtm_client = slack.RTMClient(token=slack_token)
     rtm_client.start()
