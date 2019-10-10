@@ -1,5 +1,7 @@
 import logging
 import os
+import sys
+import json
 import random
 import subprocess
 import threading
@@ -11,13 +13,6 @@ import requests
 import slack
 from uptime import uptime
 
-addresses = {
-    "Mum": 30,
-    "Titi": 50,
-    "Vicki": 202,
-    "Dad": 214,
-    "Gordon": 216
-}
 bot_id = "UN99BD0CR"
 
 
@@ -98,7 +93,7 @@ class Bot:
     def reply_uptime(self):
         uptime_text = round((uptime() / 86400), 2)
 
-        message = "i've up for {} days man".format(uptime_text)
+        message = "i've up for {} days".format(uptime_text)
 
         self.web_client.chat_postMessage(
             channel=self.channel_id,
@@ -198,7 +193,8 @@ class Bot:
             as_user=True
         )
         try:
-            result = requests.post('http://gordonpn:116782a732b876cd6382f9baa5de88c6c2@192.168.1.187:8080/job/moodle-scraper/build')
+            result = requests.post(
+                'http://gordonpn:116782a732b876cd6382f9baa5de88c6c2@192.168.1.187:8080/job/moodle-scraper/build')
             logger.info("Jenkins POST status code: {}".format(result.status_code))
             if result:
                 logger.info("Successful POST")
@@ -222,6 +218,21 @@ class Bot:
             text=message,
             as_user=True
         )
+
+
+def get_addresses():
+    addresses = {}
+    file_name = "addresses.json"
+    if os.path.exists(file_name):
+        try:
+            logger.info("loading addresses")
+            with open(file_name, "r") as read_file:
+                addresses = json.load(read_file)
+        except Exception as e:
+            logger.error("Error getting addresses | {}".format(str(e)))
+            sys.exit()
+
+    return addresses
 
 
 @slack.RTMClient.run_on(event='message')
@@ -265,5 +276,6 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
+    addresses = get_addresses()
     rtm_client = slack.RTMClient(token=slack_token)
     rtm_client.start()
