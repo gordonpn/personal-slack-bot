@@ -20,4 +20,5 @@ pip install -r requirements.txt
 * [x]  Info on cpu load
 * [x]  Refactor code to make more object-oriented
 * [x]  watch everyone feature
+* [x]  load from external sources for addresses and jenkins url
 * [ ]  stop all threads or stop one thread
