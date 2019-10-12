@@ -8,6 +8,7 @@ import threading
 import time
 from subprocess import call
 from configparser import ConfigParser
+import jenkins
 
 import psutil
 import requests
@@ -140,10 +141,13 @@ class Bot:
 
         self.post_ping_reply(active)
 
-    def post_generic_message(self):
+    def post_generic_message(self, message=None):
+        if not message:
+            message = "let me check that for you."
+
         self.web_client.chat_postMessage(
             channel=self.channel_id,
-            text="let me check that for you.",
+            text=message,
             as_user=True
         )
 
@@ -194,7 +198,7 @@ class Bot:
             as_user=True
         )
         try:
-            result = requests.post(url)
+            result = requests.post(jenkins_config['moodle_url'])
             logger.info("Jenkins POST status code: {}".format(result.status_code))
             if result:
                 logger.info("Successful POST")
@@ -239,16 +243,31 @@ def get_addresses():
 def get_config():
     config_parser = ConfigParser()
     file = "bot.conf"
-    url = ""
+    jenkins_config = {}
     if os.path.exists(file):
         config_parser.read(file)
         logger.info("found config file successfully")
     else:
         sys.exit(-1)
 
+    has_complete_config = config_parser.has_option('moodle', 'url') \
+                          and config_parser.has_option('speedtest', 'url') \
+                          and config_parser.has_option('jenkins', 'username') \
+                          and config_parser.has_option('jenkins', 'password') \
+                          and config_parser.has_option('jenkins', 'server')
+
     try:
-        if config_parser.has_option('bot', 'url'):
-            url = config_parser.get('bot', 'url')
+        if has_complete_config:
+            moodle_url = config_parser.get('moodle', 'url')
+            speedtest_url = config_parser.get('speedtest', 'url')
+            username = config_parser.get('jenkins', 'username')
+            password = config_parser.get('jenkins', 'password')
+            server = config_parser.get('jenkins', 'server')
+            jenkins_config['moodle_url'] = moodle_url
+            jenkins_config['speedtest_url'] = speedtest_url
+            jenkins_config['username'] = username
+            jenkins_config['password'] = password
+            jenkins_config['server'] = server
             logger.info("found jenkins url")
         else:
             logger.error("could not find jenkins url")
@@ -256,7 +275,18 @@ def get_config():
     except Exception as e:
         logger.error("error while loading config file | {}".format(str(e)))
 
-    return url
+    return jenkins_config
+
+
+def check_speedtest_job():
+    server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
+                             password=jenkins_config['password'])
+    info = server.get_job_config(name='speedtest-collector')
+
+    if '_anime' in info['color']:
+        pass
+    else:
+        bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
 
 
 @slack.RTMClient.run_on(event='message')
@@ -301,6 +331,6 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
     addresses = get_addresses()
-    url = get_config()
+    jenkins_config = get_config()
     rtm_client = slack.RTMClient(token=slack_token)
     rtm_client.start()
