@@ -223,15 +223,22 @@ class Bot:
             as_user=True
         )
 
-    def check_speedtest_job():
-        server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
-                                 password=jenkins_config['password'])
-        info = server.get_job_config(name='speedtest-collector')
+    def reply_start_job_watch(self):
+        self.post_generic_message(message="starting watch on speedtest jenkins job")
+        threading.Thread(target=self.check_speedtest_job).start()
+        pass
 
-        if '_anime' in info['color']:
-            pass
-        else:
-            bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
+    def check_speedtest_job(self):
+        while True:
+            server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
+                                     password=jenkins_config['password'])
+            info = server.get_job_config(name='speedtest-collector')
+
+            if '_anime' not in info['color']:
+                bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
+
+            THIRTY_MINUTES = 1800
+            time.sleep(THIRTY_MINUTES)
 
 
 def get_addresses():
