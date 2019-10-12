@@ -223,6 +223,16 @@ class Bot:
             as_user=True
         )
 
+    def check_speedtest_job():
+        server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
+                                 password=jenkins_config['password'])
+        info = server.get_job_config(name='speedtest-collector')
+
+        if '_anime' in info['color']:
+            pass
+        else:
+            bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
+
 
 def get_addresses():
     addresses = {}
@@ -276,17 +286,6 @@ def get_config():
         logger.error("error while loading config file | {}".format(str(e)))
 
     return jenkins_config
-
-
-def check_speedtest_job():
-    server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
-                             password=jenkins_config['password'])
-    info = server.get_job_config(name='speedtest-collector')
-
-    if '_anime' in info['color']:
-        pass
-    else:
-        bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
 
 
 @slack.RTMClient.run_on(event='message')
