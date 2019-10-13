@@ -232,7 +232,7 @@ class Bot:
         while True:
             server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
                                      password=jenkins_config['password'])
-            info = server.get_job_config(name='speedtest-collector')
+            info = server.get_job_info(name='speedtest-collector')
 
             if '_anime' not in info['color']:
                 bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
