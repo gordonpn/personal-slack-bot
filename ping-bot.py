@@ -159,15 +159,23 @@ class Bot:
     def reply_scrape(self):
         self.post_generic_message(message="updating your moodle courses folder...")
 
-        try:
-            result = requests.post(jenkins_config['moodle_url'])
-            logger.info("Jenkins POST status code: {}".format(result.status_code))
-            if result:
-                logger.info("Successful POST")
-            else:
-                logger.error("Unsuccessful POST")
-        except Exception as e:
-            logger.error("Error with POST to Jenkins | {}".format(str(e)))
+        server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
+                                 password=jenkins_config['password'])
+        job_name = moodle_scraper
+        build_number = server.build_job(name=job_name)
+
+        message = "starting {}, build number {}".format(job_name, build_number)
+        self.post_generic_message(message=message)
+
+        # try:
+        #     result = requests.post(jenkins_config['moodle_url'])
+        #     logger.info("Jenkins POST status code: {}".format(result.status_code))
+        #     if result:
+        #         logger.info("Successful POST")
+        #     else:
+        #         logger.error("Unsuccessful POST")
+        # except Exception as e:
+        #     logger.error("Error with POST to Jenkins | {}".format(str(e)))
 
     def reply_ram(self):
         with open('/proc/meminfo') as file:
@@ -186,13 +194,15 @@ class Bot:
 
     def _check_speedtest_job(self):
         while True:
+            logger.info("checking if speedtest is running")
             server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
                                      password=jenkins_config['password'])
-            # info = server.get_job_info(name='speedtest-collector')
-            info = server.get_job_info(name='moodle-scraper')
+            info = server.get_job_info(name='speedtest-collector')
 
             if '_anime' not in info['color']:
                 self.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
+            else:
+                logger.info("speedtest job still running, not notifying")
 
             THIRTY_MINUTES = 1800
             time.sleep(THIRTY_MINUTES)
@@ -288,6 +298,24 @@ def reply_to_message(**payload):
             bot.start_job_watch()
         else:
             bot.reply_what()
+
+
+@slack.RTMClient.run_on(event='hello')
+def say_wassup(**payload):
+    data = payload['data']
+    web_client = payload['web_client']
+
+    bot = Bot(data, web_client)
+    bot.post_generic_message(message="wassup i'm here")
+
+
+@slack.RTMClient.run_on(event='goodbye')
+def say_exit(**payload):
+    data = payload['data']
+    web_client = payload['web_client']
+
+    bot = Bot(data, web_client)
+    bot.post_generic_message(message="aight i'm out")
 
 
 if __name__ == "__main__":
