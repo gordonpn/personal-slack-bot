@@ -15,8 +15,6 @@ import requests
 import slack
 from uptime import uptime
 
-bot_id = "UN99BD0CR"
-
 
 class Bot:
     def __init__(self, data, web_client):
@@ -304,6 +302,8 @@ def reply_to_message(**payload):
 def say_wassup(**payload):
     data = payload['data']
     web_client = payload['web_client']
+    data['channel'] = 'DNHTJCXQE'
+    data['user'] = bot_id
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="wassup i'm here")
@@ -313,6 +313,9 @@ def say_wassup(**payload):
 def say_exit(**payload):
     data = payload['data']
     web_client = payload['web_client']
+    data['channel'] = 'DNHTJCXQE'
+    data['user'] = bot_id
+    # todo how to get this information without hardcoding?
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="aight i'm out")
@@ -323,6 +326,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
+    bot_id = "UN99BD0CR"
     addresses = get_addresses()
     jenkins_config = get_config()
     rtm_client = slack.RTMClient(token=slack_token)
