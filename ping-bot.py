@@ -182,7 +182,7 @@ class Bot:
 
     def start_job_watch(self):
         self.post_generic_message(message="starting watch on speedtest jenkins job")
-        threading.Thread(target=self.check_speedtest_job).start()
+        threading.Thread(target=self._check_speedtest_job).start()
 
     def _check_speedtest_job(self):
         while True:
