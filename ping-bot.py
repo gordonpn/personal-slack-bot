@@ -159,7 +159,7 @@ class Bot:
 
         server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
                                  password=jenkins_config['password'])
-        job_name = moodle_scraper
+        job_name = 'moodle-scraper'
         build_number = server.build_job(name=job_name)
 
         message = "starting {}, build number {}".format(job_name, build_number)
