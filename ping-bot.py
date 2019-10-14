@@ -192,11 +192,8 @@ class Bot:
                 time.sleep(10)
 
     def reply_scrape(self):
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text="updating your moodle courses folder...",
-            as_user=True
-        )
+        self.post_generic_message(message="updating your moodle courses folder...")
+
         try:
             result = requests.post(jenkins_config['moodle_url'])
             logger.info("Jenkins POST status code: {}".format(result.status_code))
@@ -223,10 +220,9 @@ class Bot:
             as_user=True
         )
 
-    def reply_start_job_watch(self):
+    def start_job_watch(self):
         self.post_generic_message(message="starting watch on speedtest jenkins job")
         threading.Thread(target=self.check_speedtest_job).start()
-        pass
 
     def check_speedtest_job(self):
         while True:
