@@ -35,7 +35,7 @@ class Bot:
         return active
 
     def reply_hello(self):
-        self.post_generic_message(message="Hi {}!".format(self.user))
+        self.post_generic_message(message="Hi @{}!".format(self.user))
 
     def reply_np(self):
         list_replies = [
@@ -160,20 +160,11 @@ class Bot:
         server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
                                  password=jenkins_config['password'])
         job_name = 'moodle-scraper'
-        build_number = server.build_job(name=job_name)
+        server.build_job(name=job_name)
+        jenkins_channel = 'CNGGCRU21'
 
-        message = "starting {}, build number {}".format(job_name, build_number)
+        message = "starting {}, check #{}".format(job_name, jenkins_channel)
         self.post_generic_message(message=message)
-
-        # try:
-        #     result = requests.post(jenkins_config['moodle_url'])
-        #     logger.info("Jenkins POST status code: {}".format(result.status_code))
-        #     if result:
-        #         logger.info("Successful POST")
-        #     else:
-        #         logger.error("Unsuccessful POST")
-        # except Exception as e:
-        #     logger.error("Error with POST to Jenkins | {}".format(str(e)))
 
     def reply_ram(self):
         with open('/proc/meminfo') as file:
@@ -198,7 +189,8 @@ class Bot:
             info = server.get_job_info(name='speedtest-collector')
 
             if '_anime' not in info['color']:
-                self.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
+                self.post_generic_message(message="hey buddy, you might wanna check your speedtest jenkins job")
+                self.post_generic_message(message=jenkins_config['speedtest_url'])
             else:
                 logger.info("speedtest job still running, not notifying")
 
@@ -232,24 +224,21 @@ def get_config():
     else:
         sys.exit(-1)
 
-    has_complete_config = config_parser.has_option('moodle', 'url') \
-                          and config_parser.has_option('speedtest', 'url') \
-                          and config_parser.has_option('jenkins', 'username') \
+    has_complete_config = config_parser.has_option('jenkins', 'username') \
                           and config_parser.has_option('jenkins', 'password') \
-                          and config_parser.has_option('jenkins', 'server')
+                          and config_parser.has_option('jenkins', 'server') \
+                          and config_parser.has_option('jenkins', 'job_url')
 
     try:
         if has_complete_config:
-            moodle_url = config_parser.get('moodle', 'url')
-            speedtest_url = config_parser.get('speedtest', 'url')
             username = config_parser.get('jenkins', 'username')
             password = config_parser.get('jenkins', 'password')
             server = config_parser.get('jenkins', 'server')
-            jenkins_config['moodle_url'] = moodle_url
-            jenkins_config['speedtest_url'] = speedtest_url
+            speedtest_url = config_parser.get('jenkins', 'job_url')
             jenkins_config['username'] = username
             jenkins_config['password'] = password
             jenkins_config['server'] = server
+            jenkins_config['speedtest_url'] = speedtest_url
             logger.info("found jenkins url")
         else:
             logger.error("could not find jenkins url")
@@ -292,8 +281,6 @@ def reply_to_message(**payload):
             bot.reply_scrape()
         elif 'ram' in text:
             bot.reply_ram()
-        elif 'job' in text:
-            bot.start_job_watch()
         else:
             bot.reply_what()
 
@@ -304,9 +291,11 @@ def say_wassup(**payload):
     web_client = payload['web_client']
     data['channel'] = 'DNHTJCXQE'
     data['user'] = bot_id
+    # todo how to get this information without hardcoding?
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="wassup i'm here")
+    bot.start_job_watch()
 
 
 @slack.RTMClient.run_on(event='goodbye')
@@ -315,7 +304,6 @@ def say_exit(**payload):
     web_client = payload['web_client']
     data['channel'] = 'DNHTJCXQE'
     data['user'] = bot_id
-    # todo how to get this information without hardcoding?
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="aight i'm out")
