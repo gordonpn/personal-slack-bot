@@ -192,7 +192,7 @@ class Bot:
             info = server.get_job_info(name='moodle-scraper')
 
             if '_anime' not in info['color']:
-                bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
+                self.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
 
             THIRTY_MINUTES = 1800
             time.sleep(THIRTY_MINUTES)
@@ -262,7 +262,6 @@ def reply_to_message(**payload):
     is_not_bot = data['user'] != bot_id
 
     bot = Bot(data, web_client)
-    bot.start_job_watch()
 
     if is_not_bot:
         if 'hello' in text or 'yo' in text:
@@ -285,6 +284,8 @@ def reply_to_message(**payload):
             bot.reply_scrape()
         elif 'ram' in text:
             bot.reply_ram()
+        elif 'job' in text:
+            bot.start_job_watch()
         else:
             bot.reply_what()
 
