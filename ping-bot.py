@@ -35,7 +35,7 @@ class Bot:
         return active
 
     def reply_hello(self):
-        self.post_generic_message(message="Hi @{}!".format(self.user))
+        self.post_generic_message(message="Hi <@{}>!".format(self.user))
 
     def reply_np(self):
         list_replies = [
@@ -161,9 +161,9 @@ class Bot:
                                  password=jenkins_config['password'])
         job_name = 'moodle-scraper'
         server.build_job(name=job_name)
-        jenkins_channel = 'CNGGCRU21'
+        jenkins_channel = 'CNGGCRU21|jenkins-ci'
 
-        message = "starting {}, check #{}".format(job_name, jenkins_channel)
+        message = "starting {}, check <#{}>".format(job_name, jenkins_channel)
         self.post_generic_message(message=message)
 
     def reply_ram(self):
