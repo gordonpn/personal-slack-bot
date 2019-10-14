@@ -37,11 +37,7 @@ class Bot:
         return active
 
     def reply_hello(self):
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=f"Hi <@{self.user}>!",
-            as_user=True
-        )
+        self.post_generic_message(message="Hi {}!".format(self.user))
 
     def reply_np(self):
         list_replies = [
@@ -55,12 +51,7 @@ class Bot:
             "don't worry about it"
         ]
         message = random.choice(list_replies)
-
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
+        self.post_generic_message(message=message)
 
     def reply_what(self):
         list_replies = [
@@ -74,34 +65,19 @@ class Bot:
             "just gonna ignore that"
         ]
         message = random.choice(list_replies)
-
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
+        self.post_generic_message(message=message)
 
     def reply_cpu_load(self):
         cpu_load = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()]
 
         message = "i've been working at {}% in the last 15 minutes".format(cpu_load[2])
-
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
+        self.post_generic_message(message=message)
 
     def reply_uptime(self):
         uptime_text = round((uptime() / 86400), 2)
 
         message = "i've up for {} days".format(uptime_text)
-
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
+        self.post_generic_message(message=message)
 
     def reply_ping_all(self):
         self.post_generic_message()
@@ -120,11 +96,7 @@ class Bot:
             active_string = seperator.join(active)
             message = active_string + " are home currently."
 
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
+        self.post_generic_message(message=message)
 
     def reply_ping_subset(self):
         text = self.data['text'].lower()
@@ -152,11 +124,7 @@ class Bot:
         )
 
     def reply_reboot(self):
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text="ight imma head out",
-            as_user=True
-        )
+        self.post_generic_message(message="ight imma head out")
         exit()
 
     def reply_watch_ping(self):
@@ -167,11 +135,8 @@ class Bot:
 
         for name, value in addresses.items():
             if name.lower() in text or everyone:
-                self.web_client.chat_postMessage(
-                    channel=self.channel_id,
-                    text="i will keep a watch on {} for you.".format(name),
-                    as_user=True
-                )
+                message = "i will keep a watch on {} for you.".format(name)
+                self.post_generic_message(message=message)
                 logger.debug("starting watch thread for {}".format(name))
                 watch_thread = threading.Thread(target=self.watch_ping, args=(name, value))
                 watch_thread.start()
@@ -213,22 +178,18 @@ class Bot:
 
         free_mem_in_mb = int(int(free_mem_in_kb, 10) / 1000);
         message = "i have {} MB free in memory".format(free_mem_in_mb)
-
-        self.web_client.chat_postMessage(
-            channel=self.channel_id,
-            text=message,
-            as_user=True
-        )
+        self.post_generic_message(message=message)
 
     def start_job_watch(self):
         self.post_generic_message(message="starting watch on speedtest jenkins job")
         threading.Thread(target=self.check_speedtest_job).start()
 
-    def check_speedtest_job(self):
+    def _check_speedtest_job(self):
         while True:
             server = jenkins.Jenkins(jenkins_config['server'], username=jenkins_config['username'],
                                      password=jenkins_config['password'])
-            info = server.get_job_info(name='speedtest-collector')
+            # info = server.get_job_info(name='speedtest-collector')
+            info = server.get_job_info(name='moodle-scraper')
 
             if '_anime' not in info['color']:
                 bot.post_generic_message(message="hey buddy, you should check your speedtest jenkins job")
@@ -301,9 +262,10 @@ def reply_to_message(**payload):
     is_not_bot = data['user'] != bot_id
 
     bot = Bot(data, web_client)
+    bot.start_job_watch()
 
     if is_not_bot:
-        if 'hello' in text:
+        if 'hello' in text or 'yo' in text:
             bot.reply_hello()
         elif 'thanks' in text or 'thank you' in text:
             bot.reply_np()
