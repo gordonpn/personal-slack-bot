@@ -206,13 +206,16 @@ class Bot:
             if not specified:
                 if 'watch' in process.name:
                     process.terminate()
+                    process.join()
                     logger.info(message)
                     self.post_generic_message(message)
             else:
                 if specified in process.name:
                     process.terminate()
+                    process.join()
                     logger.info(message)
                     self.post_generic_message(message)
+        self.post_generic_message(message='done!')
 
 
 def get_addresses():
@@ -278,7 +281,7 @@ def reply_to_message(**payload):
     bot = Bot(data, web_client)
 
     if is_not_bot:
-        if 'hello' in text or 'yo' in text:
+        if 'hello' in text:
             bot.reply_hello()
         elif 'thanks' in text or 'thank you' in text:
             bot.reply_np()
