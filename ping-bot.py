@@ -1,16 +1,17 @@
-import json
 import logging
 import os
+import sys
+import json
 import random
 import subprocess
-import sys
 import threading
-import multiprocessing
 import time
+from subprocess import call
 from configparser import ConfigParser
-
 import jenkins
+
 import psutil
+import requests
 import slack
 from uptime import uptime
 
@@ -135,10 +136,7 @@ class Bot:
                 message = "i will keep a watch on {} for you.".format(name)
                 self.post_generic_message(message=message)
                 logger.debug("starting watch thread for {}".format(name))
-                process = multiprocessing.Process(target=self.watch_ping, args=(name, value),
-                                                  name='watch_{}'.format(name))
-                running_processes.append(process)
-                process.start()
+                threading.Thread(target=self.watch_ping, args=(name, value)).start()
 
     def watch_ping(self, name, value):
         success = False
@@ -180,9 +178,7 @@ class Bot:
 
     def start_job_watch(self):
         self.post_generic_message(message="starting watch on speedtest jenkins job")
-        process = multiprocessing.Process(target=self._check_speedtest_job, name='speedtest')
-        process.start()
-        running_processes.append(process)
+        threading.Thread(target=self._check_speedtest_job).start()
 
     def _check_speedtest_job(self):
         while True:
@@ -199,23 +195,6 @@ class Bot:
 
             THIRTY_MINUTES = 1800
             time.sleep(THIRTY_MINUTES)
-
-    def kill_threads(self, specified=None):
-        for process in running_processes:
-            message = "stopped process: {}".format(process.name)
-            if not specified:
-                if 'watch' in process.name:
-                    process.terminate()
-                    process.join()
-                    logger.info(message)
-                    self.post_generic_message(message)
-            else:
-                if specified in process.name:
-                    process.terminate()
-                    process.join()
-                    logger.info(message)
-                    self.post_generic_message(message)
-        self.post_generic_message(message='done!')
 
 
 def get_addresses():
@@ -301,8 +280,6 @@ def reply_to_message(**payload):
             bot.reply_scrape()
         elif 'ram' in text:
             bot.reply_ram()
-        elif 'kill' in text and 'threads' in text:
-            bot.kill_threads()
         else:
             bot.reply_what()
 
@@ -329,7 +306,6 @@ def say_exit(**payload):
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="aight i'm out")
-    bot.kill_threads(specified='speedtest')
 
 
 if __name__ == "__main__":
@@ -338,7 +314,6 @@ if __name__ == "__main__":
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
     bot_id = "UN99BD0CR"
-    running_processes = []
     addresses = get_addresses()
     jenkins_config = get_config()
     rtm_client = slack.RTMClient(token=slack_token)
