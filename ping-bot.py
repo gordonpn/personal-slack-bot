@@ -306,6 +306,7 @@ def say_exit(**payload):
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="aight i'm out")
+    sys.exit()
 
 
 if __name__ == "__main__":
