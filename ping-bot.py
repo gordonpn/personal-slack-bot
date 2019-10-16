@@ -1,17 +1,15 @@
+import json
 import logging
 import os
-import sys
-import json
 import random
 import subprocess
+import sys
 import threading
 import time
-from subprocess import call
 from configparser import ConfigParser
-import jenkins
 
+import jenkins
 import psutil
-import requests
 import slack
 from uptime import uptime
 
@@ -23,11 +21,11 @@ class Bot:
         self.channel_id = data['channel']
         self.user = data['user']
 
-    def ping_all(self, addresses):
+    def ping_all(self, addresses_list):
         active = set()
         logger.debug("attempting to ping all addresses")
         with open(os.devnull, "wb") as limbo:
-            for name, value in addresses.items():
+            for name, value in addresses_list.items():
                 ip = "192.168.1.{0}".format(value)
                 result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
                 if result == 0:
@@ -140,7 +138,7 @@ class Bot:
 
     def watch_ping(self, name, value):
         success = False
-        while (not success):
+        while not success:
             with open(os.devnull, "wb") as limbo:
                 ip = "192.168.1.{0}".format(value)
                 logger.debug("attempting to ping {}".format(name))
@@ -172,7 +170,7 @@ class Bot:
                     free_mem_in_kb = line.split()[1]
                     break
 
-        free_mem_in_mb = int(int(free_mem_in_kb, 10) / 1000);
+        free_mem_in_mb = int(int(free_mem_in_kb, 10) / 1000)
         message = "i have {} MB free in memory".format(free_mem_in_mb)
         self.post_generic_message(message=message)
 
@@ -193,40 +191,39 @@ class Bot:
             else:
                 logger.info("speedtest job still running, not notifying")
 
-            THIRTY_MINUTES = 1800
-            time.sleep(THIRTY_MINUTES)
+            thirty_minutes = 1800
+            time.sleep(thirty_minutes)
 
 
 def get_addresses():
-    addresses = {}
+    config_addresses = {}
     file_name = "addresses.json"
     if os.path.exists(file_name):
         try:
             logger.info("loading addresses")
             with open(file_name, "r") as read_file:
-                addresses = json.load(read_file)
+                config_addresses = json.load(read_file)
                 logger.info("loaded addresses successfully")
         except Exception as e:
             logger.error("Error getting addresses | {}".format(str(e)))
             sys.exit(-1)
 
-    return addresses
+    return config_addresses
 
 
 def get_config():
     config_parser = ConfigParser()
     file = "bot.conf"
-    jenkins_config = {}
+    jenkins_conf = {}
     if os.path.exists(file):
         config_parser.read(file)
         logger.info("found config file successfully")
     else:
         sys.exit(-1)
 
-    has_complete_config = config_parser.has_option('jenkins', 'username') \
-                          and config_parser.has_option('jenkins', 'password') \
-                          and config_parser.has_option('jenkins', 'server') \
-                          and config_parser.has_option('jenkins', 'job_url')
+    has_complete_config = config_parser.has_option('jenkins', 'username') and config_parser.has_option('jenkins',
+                                                                                                       'password') and config_parser.has_option(
+        'jenkins', 'server') and config_parser.has_option('jenkins', 'job_url')
 
     try:
         if has_complete_config:
@@ -234,10 +231,10 @@ def get_config():
             password = config_parser.get('jenkins', 'password')
             server = config_parser.get('jenkins', 'server')
             speedtest_url = config_parser.get('jenkins', 'job_url')
-            jenkins_config['username'] = username
-            jenkins_config['password'] = password
-            jenkins_config['server'] = server
-            jenkins_config['speedtest_url'] = speedtest_url
+            jenkins_conf['username'] = username
+            jenkins_conf['password'] = password
+            jenkins_conf['server'] = server
+            jenkins_conf['speedtest_url'] = speedtest_url
             logger.info("found jenkins url")
         else:
             logger.error("could not find jenkins url")
@@ -245,14 +242,13 @@ def get_config():
     except Exception as e:
         logger.error("error while loading config file | {}".format(str(e)))
 
-    return jenkins_config
+    return jenkins_conf
 
 
 @slack.RTMClient.run_on(event='message')
 def reply_to_message(**payload):
     data = payload['data']
     web_client = payload['web_client']
-    rtm_client = payload['rtm_client']
     text = data['text'].lower()
     logger.debug("parsing: {}".format(text))
     is_not_bot = data['user'] != bot_id
