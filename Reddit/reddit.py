@@ -112,6 +112,7 @@ def _get_new() -> List[Submission]:
     temp_set = set(old_list)
     new_list = [item for item in fresh_list if item not in temp_set]
 
+    _mark_as_seen(fresh_list)
     return new_list
 
 
