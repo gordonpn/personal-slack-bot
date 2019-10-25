@@ -1,4 +1,4 @@
-# Who is home Slack bot
+# Personal Butler Slack bot
 
 ## Description
 This project started as a Golang cli script to ping internal IP addresses and return me if they are connected. I wanted an easier way to run the script without having to ssh into my Raspberry Pi server. so I decided to rewrite it in Python and turn it into a Slack Bot I could ping through the Slack app. 

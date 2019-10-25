@@ -1,5 +1,5 @@
+slackclient==2.2.1
 slack
-slackclient
 psutil
 uptime
 requests
