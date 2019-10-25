@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from configparser import ConfigParser
@@ -71,19 +72,59 @@ def _get_subreddits() -> List[str]:
     return subreddits
 
 
-def _read_seen():
-    pass
+def _get_path() -> str:
+    return "seen_reddit_posts.json"
 
 
-def _write_seen():
-    pass
+def _read_seen() -> List[Submission]:
+    if os.path.exists(_get_path()):
+        try:
+            with open(_get_path(), 'r') as read_file:
+                submissions_list: List[Submission] = []
+                id_list = json.load(read_file)
+                for post_id in id_list:
+                    submissions_list.append(Submission(reddit=_get_instance(), id=post_id))
+                return submissions_list
+        except ValueError:
+            return []
+    else:
+        return []
 
 
-def _mark_as_seen():
-    pass
+def _write_seen(submissions_list: List[Submission] = None):
+    list_to_write: List[str] = []
+    for sub in submissions_list:
+        list_to_write.append(sub.id)
+    with open(_get_path(), 'w+') as write_file:
+        json.dump(list_to_write, write_file, indent=4)
 
 
-def get_hot_posts() -> List[Submission]:
+def _mark_as_seen(new_list: List[Submission] = None):
+    old_list: List[Submission] = _read_seen()
+    for sub in new_list:
+        old_list.append(sub)
+    _write_seen(old_list)
+
+
+def _get_new() -> List[Submission]:
+    fresh_list = _get_hot_posts()
+    old_list: List[Submission] = _read_seen()
+    temp_set = set(old_list)
+    new_list = [item for item in fresh_list if item not in temp_set]
+
+    return new_list
+
+
+def _populate_submissions(list_of_submissions: List[Submission] = None) -> Dict[str, str]:
+    hot_posts: Dict[str, str] = {}
+
+    for sub in list_of_submissions:
+        hot_posts[sub.title] = sub.url
+
+    return hot_posts
+
+
+def _get_hot_posts() -> List[Submission]:
     instance = _get_instance()
     subreddits = _get_subreddits()
     limit: int = 15
@@ -95,6 +136,11 @@ def get_hot_posts() -> List[Submission]:
             submissions_list.append(submission)
 
     return submissions_list
+
+
+def get_unseen_hot_posts() -> Dict[str, str]:
+    hot_posts = _populate_submissions(_get_new())
+    return hot_posts
 
 
 logger = logging.getLogger()
