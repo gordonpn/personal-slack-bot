@@ -4,3 +4,4 @@ psutil
 uptime
 requests
 python-jenkins
+praw
