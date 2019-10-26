@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from configparser import ConfigParser
 from typing import Dict, List
 
@@ -135,6 +136,7 @@ def _get_hot_posts() -> List[Submission]:
         submissions: ListingGenerator = instance.subreddit(subreddit).hot(limit=limit)
         for submission in submissions:
             submissions_list.append(submission)
+        time.sleep(10)
 
     return submissions_list
 
