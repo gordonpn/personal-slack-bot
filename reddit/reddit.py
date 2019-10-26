@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 from configparser import ConfigParser
 from typing import Dict, List
@@ -42,7 +41,7 @@ def _get_config() -> Dict[str, str]:
 
 def _get_config_parser() -> ConfigParser:
     config_parser = ConfigParser()
-    config_file: str = '../bot.conf'
+    config_file: str = 'bot.conf'
     if not os.path.exists(config_file):
         raise Exception("config file not found")
     else:
@@ -57,7 +56,6 @@ def _get_config_parser() -> ConfigParser:
 def _get_subreddits() -> List[str]:
     config_parser: ConfigParser = _get_config_parser()
     subreddits_as_string: str
-    # subreddits: List[str] = []
 
     if not config_parser.has_option(section, 'subreddits'):
         raise Exception("config file missing subreddits watchlist")
@@ -101,8 +99,10 @@ def _write_seen(submissions_list: List[Submission] = None):
 
 def _mark_as_seen(new_list: List[Submission] = None):
     old_list: List[Submission] = _read_seen()
+    old_set = set(old_list)
     for sub in new_list:
-        old_list.append(sub)
+        if sub not in old_set:
+            old_list.append(sub)
     _write_seen(old_list)
 
 
@@ -144,7 +144,4 @@ def get_unseen_hot_posts() -> Dict[str, str]:
     return hot_posts
 
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
 section: str = 'reddit'

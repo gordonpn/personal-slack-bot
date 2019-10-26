@@ -13,13 +13,15 @@ import psutil
 import slack
 from uptime import uptime
 
+from reddit import reddit
+
 
 class Bot:
     def __init__(self, data, web_client):
         self.data = data
         self.web_client = web_client
-        self.channel_id = data['channel']
-        self.user = data['user']
+        self.channel_id = data.get('channel')
+        self.user = data.get('user')
 
     def ping_all(self, addresses_list):
         active = set()
@@ -194,6 +196,21 @@ class Bot:
             thirty_minutes = 1800
             time.sleep(thirty_minutes)
 
+    def start_reddit_polling(self):
+        self.post_generic_message(message="starting reddit polling")
+        threading.Thread(target=self._reddit_polling).start()
+
+    def _reddit_polling(self):
+        while True:
+            logger.info("polling reddit for new hot posts")
+            new_posts: Dict[str, str] = reddit.get_unseen_hot_posts()
+
+            for title, url in new_posts.items():
+                self.post_generic_message(message="<{}|{}>".format(url, title))
+
+            ten_minutes = 600
+            time.sleep(ten_minutes)
+
 
 def get_addresses():
     config_addresses = {}
@@ -249,13 +266,13 @@ def get_config():
 def reply_to_message(**payload):
     data = payload['data']
     web_client = payload['web_client']
-    text = data['text'].lower()
-    logger.debug("parsing: {}".format(text))
-    is_not_bot = data['user'] != bot_id
-
     bot = Bot(data, web_client)
+    is_human = data.get('user') == 'UNHGUEDN3'
 
-    if is_not_bot:
+    if is_human:
+        text = data.get('text').lower()
+        logger.debug("parsing: {}".format(text))
+
         if 'hello' in text:
             bot.reply_hello()
         elif 'thanks' in text or 'thank you' in text:
@@ -291,6 +308,7 @@ def say_wassup(**payload):
     bot = Bot(data, web_client)
     bot.post_generic_message(message="wassup i'm here")
     bot.start_job_watch()
+    bot.start_reddit_polling()
 
 
 @slack.RTMClient.run_on(event='goodbye')
@@ -310,7 +328,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
-    bot_id = "UN99BD0CR"
+    bot_id = "BN99BCY0Z"
     addresses = get_addresses()
     jenkins_config = get_config()
     rtm_client = slack.RTMClient(token=slack_token)
