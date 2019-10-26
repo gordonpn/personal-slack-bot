@@ -328,7 +328,7 @@ if __name__ == "__main__":
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())
     slack_token = os.environ["SLACK_API_TOKEN"]
-    bot_id = "BN99BCY0Z"
+    bot_id = "UN99BD0CR"
     addresses = get_addresses()
     jenkins_config = get_config()
     rtm_client = slack.RTMClient(token=slack_token)
