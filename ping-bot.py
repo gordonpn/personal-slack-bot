@@ -262,6 +262,16 @@ def get_config():
     return jenkins_conf
 
 
+def get_logger() -> Logger:
+    logger = logging.getLogger()
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(console_handler)
+    return logger
+
+
 @slack.RTMClient.run_on(event='message')
 def reply_to_message(**payload):
     data = payload['data']
@@ -324,9 +334,8 @@ def say_exit(**payload):
 
 
 if __name__ == "__main__":
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler())
+    logger = get_logger()
+
     slack_token = os.environ["SLACK_API_TOKEN"]
     bot_id = "UN99BD0CR"
     addresses = get_addresses()
