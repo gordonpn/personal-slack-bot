@@ -8,6 +8,8 @@ import praw
 from praw import Reddit
 from praw.models import ListingGenerator, Submission
 
+section: str = 'reddit'
+
 
 def _get_instance() -> Reddit:
     config: Dict[str, str] = _get_config()
@@ -144,6 +146,3 @@ def _get_hot_posts() -> List[Submission]:
 def get_unseen_hot_posts() -> Dict[str, str]:
     hot_posts = _populate_submissions(_get_new())
     return hot_posts
-
-
-section: str = 'reddit'
