@@ -132,7 +132,7 @@ def _populate_submissions(list_of_submissions: List[Submission] = None) -> Dict[
 def _get_hot_posts() -> List[Submission]:
     instance = _get_instance()
     subreddits = _get_subreddits()
-    limit: int = 15
+    limit: int = 10
     time_filter: str = 'day'
     submissions_list: List[Submission] = []
 
