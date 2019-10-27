@@ -2,6 +2,7 @@ import json
 import os
 import time
 from configparser import ConfigParser
+from random import shuffle
 from typing import Dict, List
 
 import praw
@@ -132,14 +133,16 @@ def _get_hot_posts() -> List[Submission]:
     instance = _get_instance()
     subreddits = _get_subreddits()
     limit: int = 15
+    time_filter: str = 'day'
     submissions_list: List[Submission] = []
 
     for subreddit in subreddits:
-        submissions: ListingGenerator = instance.subreddit(subreddit).hot(limit=limit)
+        submissions: ListingGenerator = instance.subreddit(subreddit).top(limit=limit, time_filter=time_filter)
         for submission in submissions:
             submissions_list.append(submission)
         time.sleep(10)
 
+    shuffle(submissions_list)
     return submissions_list
 
 
