@@ -295,6 +295,8 @@ def reply_to_message(**payload):
             bot.reply_ping_subset()
         elif 'watch' in text:
             bot.reply_watch_ping()
+        elif 'watch' in text and 'jenkins' in text:
+            bot.start_job_watch()
         elif 'scrape' in text:
             bot.reply_scrape()
         elif 'ram' in text:
@@ -313,7 +315,6 @@ def say_hi(**payload):
 
     bot = Bot(data, web_client)
     bot.post_generic_message(message="wassup i'm here")
-    bot.start_job_watch()
     bot.start_reddit_polling()
 
 
