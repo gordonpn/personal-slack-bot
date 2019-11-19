@@ -29,14 +29,14 @@ class Bot:
         logger.debug("attempting to ping all addresses")
         with open(os.devnull, "wb") as limbo:
             for name, value in addresses_list.items():
-                ip = "192.168.1.{0}".format(value)
+                ip = f"192.168.1.{value}"
                 result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
                 if result == 0:
                     active.add(name)
         return active
 
     def reply_hello(self):
-        self.post_generic_message(message="Hi <@{}>!".format(self.user))
+        self.post_generic_message(message=f"Hi <@{self.user}>!")
 
     def reply_np(self):
         list_replies: List[str] = [
@@ -69,13 +69,13 @@ class Bot:
     def reply_cpu_load(self):
         cpu_load = [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()]
 
-        message: str = "i've been working at {}% in the last 15 minutes".format(cpu_load[2])
+        message: str = f"i've been working at {cpu_load[2]}% in the last 15 minutes"
         self.post_generic_message(message=message)
 
     def reply_uptime(self):
         uptime_text: float = round((uptime() / 86400), 2)
 
-        message: str = "i've up for {} days".format(uptime_text)
+        message: str = f"i've up for {uptime_text} days"
         self.post_generic_message(message=message)
 
     def reply_ping_all(self):
@@ -134,17 +134,17 @@ class Bot:
 
         for name, value in addresses.items():
             if name.lower() in text or everyone:
-                message = "i will keep a watch on {} for you.".format(name)
+                message = f"i will keep a watch on {name} for you."
                 self.post_generic_message(message=message)
-                logger.debug("starting watch thread for {}".format(name))
+                logger.debug(f"starting watch thread for {name}")
                 threading.Thread(target=self.watch_ping, args=(name, value)).start()
 
     def watch_ping(self, name, value):
         success: bool = False
         while not success:
             with open(os.devnull, "wb") as limbo:
-                ip = "192.168.1.{0}".format(value)
-                logger.debug("attempting to ping {}".format(name))
+                ip = f"192.168.1.{value}"
+                logger.debug(f"attempting to ping {name}")
                 result = subprocess.Popen(["ping", "-c", "1", "-n", "-W", "5", ip], stdout=limbo, stderr=limbo).wait()
                 if result == 0:
                     active = set()
@@ -163,7 +163,7 @@ class Bot:
         server.build_job(name=job_name)
         jenkins_channel = 'CNGGCRU21|jenkins-ci'
 
-        message = "starting {}, check <#{}>".format(job_name, jenkins_channel)
+        message = f"starting {job_name}, check <#{jenkins_channel}>"
         self.post_generic_message(message=message)
 
     def reply_ram(self):
@@ -174,7 +174,7 @@ class Bot:
                     break
 
         free_mem_in_mb = int(int(free_mem_in_kb, 10) / 1000)
-        message = "i have {} MB free in memory".format(free_mem_in_mb)
+        message = f"i have {free_mem_in_mb} MB free in memory"
         self.post_generic_message(message=message)
 
     def start_job_watch(self):
@@ -207,7 +207,7 @@ class Bot:
             new_posts: Dict[str, str] = reddit.get_unseen_hot_posts()
 
             for title, url in new_posts.items():
-                self.post_generic_message(message="<{}|{}>".format(url, title))
+                self.post_generic_message(message=f"<{url}|{title}>")
                 time.sleep(10)
 
             ten_minutes = 600
@@ -224,7 +224,7 @@ def get_addresses() -> Dict[str, int]:
                 config_addresses = json.load(read_file)
                 logger.info("loaded addresses successfully")
         except Exception as e:
-            logger.error("Error getting addresses | {}".format(str(e)))
+            logger.error(f"Error getting addresses | {str(e)}")
             sys.exit(-1)
 
     return config_addresses
@@ -248,9 +248,9 @@ def get_config():
 
     for option in options_list:
         if not config_parser.has_option(section, option):
-            raise Exception("config file missing option: {}".format(option))
+            raise Exception(f"config file missing option: {option}")
         elif not config_parser.get(section, option):
-            raise Exception("config file is missing information for {}".format(option))
+            raise Exception(f"config file is missing information for {option}")
         else:
             jenkins_conf[option] = config_parser.get(section, option)
 
@@ -277,7 +277,7 @@ def reply_to_message(**payload):
     if is_human:
         # todo make this a method inside the object Bot
         text = data.get('text').lower()
-        logger.debug("parsing: {}".format(text))
+        logger.debug(f"parsing: {text}")
 
         if 'hello' in text:
             bot.reply_hello()
