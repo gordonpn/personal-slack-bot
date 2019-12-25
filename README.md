@@ -29,7 +29,9 @@ Create a `bot.conf` file as such:
 token = 
 bot_id = 
 bot_channel =
+user_id = 
 [ping]
+friendly_name =
 addresses =
 [jenkins]
 username =
@@ -44,6 +46,9 @@ user_agent =
 username =
 subreddits =
 watchlist = 
+[darksky]
+key = 
+location = 
 ```
 All configurations are optional, depends on which features you want to use.
 

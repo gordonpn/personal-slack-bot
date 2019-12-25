@@ -1,6 +1,20 @@
 import os
 from configparser import ConfigParser
-from typing import List, Dict
+from typing import Dict, List
+
+configs = []
+
+
+def get_config():
+    global configs
+
+    if configs:
+        return configs[0]
+    else:
+        config = Config()
+        config.load_config()
+        configs.append(config)
+        return config
 
 
 class Config:
@@ -10,13 +24,14 @@ class Config:
         self.ping_config = PingConfig()
         self.jenkins_config = JenkinsConfig()
         self.reddit_config = RedditConfig()
+        self.darksky_config = DarkSkyConfig()
 
     def load_config(self):
         config_parser = ConfigParser()
-        config_file: str = '../bot.conf'
+        config_file: str = 'bot.conf'
         config_sections: Dict[str, List[str]] = {
-            'slack': ['token', 'bot_id', 'bot_channel'],
-            'ping': ['addresses'],
+            'slack': ['token', 'bot_id', 'bot_channel', 'user_id'],
+            'ping': ['friendly_name', 'addresses'],
             'jenkins': ['username', 'password', 'server_url', 'job_url'],
             'reddit': ['client_id', 'client_secret', 'username', 'password', 'user_agent', 'subreddits', 'watchlist']
         }
@@ -31,10 +46,11 @@ class Config:
                 if not config_parser.has_option(section, option):
                     raise Exception(f"Missing option: {option} under {section}")
 
-        self.slack_config.load_config(config_parser, 'slack')
-        self.ping_config.load_config(config_parser, 'ping')
-        self.jenkins_config.load_config(config_parser, 'jenkins')
-        self.reddit_config.load_config(config_parser, 'reddit')
+        self.slack_config.load_config(config_parser)
+        self.ping_config.load_config(config_parser)
+        self.jenkins_config.load_config(config_parser)
+        self.reddit_config.load_config(config_parser)
+        self.darksky_config.load_config(config_parser)
 
 
 class ConfigLoader:
@@ -53,6 +69,7 @@ class SlackConfig(ConfigLoader):
         self.token: str = ""
         self.bot_id: str = ""
         self.bot_channel: str = ""
+        self.user_id: str = ""
 
     def __setitem__(self, key, value):
         if key == 'token':
@@ -61,17 +78,28 @@ class SlackConfig(ConfigLoader):
             self.bot_id = value
         elif key == 'bot_channel':
             self.bot_channel = value
+        elif key == 'user_id':
+            self.user_id = value
+
+    def load_config(self, config_parser: ConfigParser, **kwargs):
+        super().load_config(config_parser, self.section)
 
 
 class PingConfig(ConfigLoader):
     section: str = 'ping'
 
     def __init__(self):
+        self.friendly_name: List[str] = []
         self.addresses: List[str] = []
 
     def __setitem__(self, key, value):
         if key is 'addresses':
             self.addresses = value
+        elif key is 'friendly_name':
+            self.friendly_name = value
+
+    def load_config(self, config_parser: ConfigParser, **kwargs):
+        super().load_config(config_parser, self.section)
 
 
 class JenkinsConfig(ConfigLoader):
@@ -92,6 +120,9 @@ class JenkinsConfig(ConfigLoader):
             self.server_url = value
         elif key is 'job_url':
             self.job_url = value
+
+    def load_config(self, config_parser: ConfigParser, **kwargs):
+        super().load_config(config_parser, self.section)
 
 
 class RedditConfig(ConfigLoader):
@@ -121,3 +152,23 @@ class RedditConfig(ConfigLoader):
             self.subreddits = value
         elif key is 'watchlist':
             self.watchlist = value
+
+    def load_config(self, config_parser: ConfigParser, **kwargs):
+        super().load_config(config_parser, self.section)
+
+
+class DarkSkyConfig(ConfigLoader):
+    section: str = 'darksky'
+
+    def __init__(self):
+        self.key: str = ""
+        self.location: str = ""
+
+    def __setitem__(self, key, value):
+        if key is 'key':
+            self.key = value
+        elif key is 'location':
+            self.location = value
+
+    def load_config(self, config_parser: ConfigParser, **kwargs):
+        super().load_config(config_parser, self.section)

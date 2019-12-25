@@ -14,7 +14,7 @@ import psutil
 import slack
 from uptime import uptime
 
-from reddit import reddit
+from Reddit import reddit
 
 
 class Bot:
