@@ -2,9 +2,9 @@ import sys
 
 import slack
 
+from Configuration.bot import get_bot
 from Configuration.config import get_config
 from Configuration.logger import get_logger
-from SlackBot.slack_bot import Bot
 
 
 @slack.RTMClient.run_on(event='message')
@@ -13,7 +13,7 @@ def exit_bot(**payload):
     web_client = payload['web_client']
 
     is_human: bool = data.get('user') == config.slack_config.user_id
-    bot = Bot(data, web_client)
+    bot = get_bot(data, web_client)
 
     if is_human:
         text_received: str = data.get('text').lower()
@@ -26,7 +26,7 @@ def start_bot(**payload):
     data = payload['data']
     web_client = payload['web_client']
 
-    bot = Bot(data, web_client)
+    bot = get_bot(data, web_client)
     bot.reply_with_message("Hello, here I am")
 
 
@@ -35,7 +35,7 @@ def reply_bot(**payload):
     data = payload['data']
     web_client = payload['web_client']
 
-    bot = Bot(data, web_client)
+    bot = get_bot(data, web_client)
     bot.reply_with_message("Aight imma head out")
     sys.exit()
 

@@ -17,11 +17,16 @@ def get_config():
         return config
 
 
+def as_list(string: str) -> List[str]:
+    string: List[str] = string.split(',')
+    return [text.strip() for text in string]
+
+
 class Config:
 
     def __init__(self):
         self.slack_config = SlackConfig()
-        self.ping_config = PingConfig()
+        self.ping_config = None
         self.jenkins_config = JenkinsConfig()
         self.reddit_config = RedditConfig()
         self.darksky_config = DarkSkyConfig()
@@ -47,6 +52,7 @@ class Config:
                     raise Exception(f"Missing option: {option} under {section}")
 
         self.slack_config.load_config(config_parser)
+        self.ping_config = PingConfig()
         self.ping_config.load_config(config_parser)
         self.jenkins_config.load_config(config_parser)
         self.reddit_config.load_config(config_parser)
@@ -93,6 +99,7 @@ class PingConfig(ConfigLoader):
         self.addresses: List[str] = []
 
     def __setitem__(self, key, value):
+        value = as_list(value)
         if key is 'addresses':
             self.addresses = value
         elif key is 'friendly_name':
@@ -119,7 +126,7 @@ class JenkinsConfig(ConfigLoader):
         elif key is 'server_url':
             self.server_url = value
         elif key is 'job_url':
-            self.job_url = value
+            self.job_url = as_list(value)
 
     def load_config(self, config_parser: ConfigParser, **kwargs):
         super().load_config(config_parser, self.section)
@@ -149,9 +156,9 @@ class RedditConfig(ConfigLoader):
         elif key is 'user_agent':
             self.user_agent = value
         elif key is 'subreddits':
-            self.subreddits = value
+            self.subreddits = as_list(value)
         elif key is 'watchlist':
-            self.watchlist = value
+            self.watchlist = as_list(value)
 
     def load_config(self, config_parser: ConfigParser, **kwargs):
         super().load_config(config_parser, self.section)

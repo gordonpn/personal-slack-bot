@@ -6,7 +6,7 @@ from uptime import uptime
 
 from Configuration.config import get_config
 from Jenkins.jenkins_bot import JenkinsBot
-from Ping.pinger import Pinger
+from PingBot.ping_bot import PingBot
 from Reddit.reddit_bot import RedditBot
 from Weather.weather_bot import WeatherBot
 
@@ -48,7 +48,7 @@ class Bot:
         elif 'uptime' in message_received:
             message = self.reply_uptime()
         elif 'ping' in message_received:
-            pinger = Pinger()
+            pinger = PingBot()
             message = pinger.parse_message(message_received)
         elif 'jenkins' in message_received:
             jenkins_bot = JenkinsBot()
