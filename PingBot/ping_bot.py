@@ -14,7 +14,7 @@ class PingBot:
         self.logger = get_logger()
 
     def parse_message(self, message_received: str) -> str:
-        message = "Unrecognized command, the syntax is: ping [watch: optional] [name/all]"
+        message = "Unrecognized command, the syntax is: ping [watch (optional)] [name or all]"
         is_member: List[str] = self.is_member(message_received)
 
         if 'all' in message_received:
@@ -30,6 +30,7 @@ class PingBot:
 
     def format_message(self, active: Dict[str, str]) -> str:
         if not active:
+            self.logger.debug("Nothing passed in parameters for format message")
             message: str = "None of the devices responded"
         else:
             message: str = ""
@@ -52,6 +53,7 @@ class PingBot:
         return []
 
     def clean_message(self, message: List[str]) -> List[str]:
+        self.logger.debug("Sanitizing string for further processing")
         return [value for value in message if value is not 'ping' or value is not 'watch' or value is not 'all']
 
     def ping_devices(self, message: List[str] = None) -> str:
@@ -80,8 +82,8 @@ class PingBot:
             message: List[str] = self.config.ping_config.friendly_name
         for name in message:
             self.logger.debug(f"Setting ping watch for {name}")
-            with concurrent.futures.ThreadPoolExecutor() as runner:
-                future = runner.submit(self.watch_helper, name)
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(self.watch_helper, name)
                 return future.result()
 
     def watch_helper(self, who: str) -> str:

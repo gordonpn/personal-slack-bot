@@ -5,13 +5,13 @@ from typing import Dict, List
 configs = []
 
 
-def get_config():
+def get_config(file_path: str = 'bot.conf'):
     global configs
 
     if configs:
         return configs[0]
     else:
-        config = Config()
+        config = Config(file_path)
         config.load_config()
         configs.append(config)
         return config
@@ -24,16 +24,17 @@ def as_list(string: str) -> List[str]:
 
 class Config:
 
-    def __init__(self):
+    def __init__(self, file_path: str):
+        self.file_path = file_path
         self.slack_config = SlackConfig()
-        self.ping_config = None
+        self.ping_config = PingConfig()
         self.jenkins_config = JenkinsConfig()
         self.reddit_config = RedditConfig()
         self.darksky_config = DarkSkyConfig()
 
     def load_config(self):
         config_parser = ConfigParser()
-        config_file: str = 'bot.conf'
+        config_file: str = self.file_path
         config_sections: Dict[str, List[str]] = {
             'slack': ['token', 'bot_id', 'bot_channel', 'user_id'],
             'ping': ['friendly_name', 'addresses'],

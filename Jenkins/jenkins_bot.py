@@ -6,4 +6,6 @@ class JenkinsBot:
         self.config = get_config()
 
     def parse_message(self, message_received: str) -> str:
-        pass
+        message = "Unrecognized command, the syntax is: jenkins"
+
+        return message
