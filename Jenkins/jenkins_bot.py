@@ -7,5 +7,5 @@ class JenkinsBot:
 
     def parse_message(self, message_received: str) -> str:
         message = "Unrecognized command, the syntax is: jenkins"
-
+        # todo: to be implemented
         return message

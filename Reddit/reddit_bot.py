@@ -1,5 +1,5 @@
 import json
-from typing import List, Union
+from typing import List, Union, Set, Dict
 
 import praw
 from praw import Reddit
@@ -11,18 +11,23 @@ from Reddit.reddit_post import RedditPost
 
 
 class RedditScraper:
+    PATH = 'posts.json'
+    ARCHIVE = 'posts_archive.json'
+
     def __init__(self):
-        self.config = get_config('../bot.conf')
+        self.config = get_config()
         self.reddit: Reddit = self.get_reddit()
         self.logger = get_logger()
 
     def run(self):
+        previous_posts: List[RedditPost] = self.read_from_file()
         fresh_hot_posts: List[RedditPost] = self.get_fresh_hot_posts()
-        self.write_to_file(fresh_hot_posts)
-        posts: List[RedditPost] = self.read_from_file()
+        merged_posts: List[RedditPost] = self.merge(new_list=fresh_hot_posts, existing_list=previous_posts)
+        self.write_to_file(merged_posts)
         self.logger.debug("Done!")
 
     def clean_up(self):
+        # todo: to be implemented
         pass
 
     def get_reddit(self) -> Reddit:
@@ -40,35 +45,38 @@ class RedditScraper:
         for subreddit in self.config.reddit_config.subreddits:
             submissions: ListingGenerator = self.reddit.subreddit(subreddit).top(limit=limit, time_filter=time_filter)
             for submission in submissions:
-                title = submission.title
-                post_id = submission.id
-                votes = submission.score
-                # shortlink example: 'https://redd.it/egud6i'
-                link = submission.url
-                unix_time = submission.created_utc
-                self.logger.debug(f"Parsing: post_id={post_id}")
-                a_reddit_post = RedditPost(title, post_id, votes, link, unix_time, False)
-                reddit_posts.append(a_reddit_post)
+                if not submission.stickied:
+                    title = submission.title
+                    post_id = submission.id
+                    votes = submission.score
+                    link = submission.url
+                    is_self = submission.is_self
+                    unix_time = submission.created_utc
+                    self.logger.debug(f"Parsing: post_id={post_id}")
+                    a_reddit_post = RedditPost(title, subreddit, post_id, votes, link, unix_time, is_self, False)
+                    reddit_posts.append(a_reddit_post)
 
         return reddit_posts
 
     @staticmethod
-    def write_to_file(data: List[RedditPost], where: str = None) -> None:
-        if not where:
-            path = 'posts.json'
-        else:
-            path = 'archive.json'
+    def merge(new_list: List[RedditPost], existing_list: List[RedditPost]) -> List[RedditPost]:
+        strictly_new_posts: Set[RedditPost] = set(new_list) - set(existing_list)
+        dict_posts: Dict[str, RedditPost] = {post.id: post for post in existing_list}
 
+        for post in new_list:
+            dict_posts.get(post.id).votes = post.votes
+
+        return list(strictly_new_posts) + list(dict_posts.values())
+
+    @staticmethod
+    def write_to_file(data: List[RedditPost], where: str = None) -> None:
+        path = RedditScraper.ARCHIVE if where else RedditScraper.PATH
         with open(path, 'w+') as write_file:
             write_file.write(json.dumps([post.__dict__ for post in data], indent=4))
 
     @staticmethod
     def read_from_file(where: str = None) -> List[RedditPost]:
-        if not where:
-            path = 'posts.json'
-        else:
-            path = 'archive.json'
-
+        path = RedditScraper.ARCHIVE if where else RedditScraper.PATH
         with open(path, 'r') as read_file:
             posts = json.load(read_file)
 
@@ -76,6 +84,9 @@ class RedditScraper:
 
 
 class RedditBot:
+    OLDEST = 'oldest'
+    TOP = 'top'
+
     def __init__(self):
         self.config = get_config()
         self.logger = get_logger()
@@ -84,25 +95,45 @@ class RedditBot:
         message = "Unrecognized command, the syntax is: reddit [oldest or top] [an integer]"
         message_as_list: List[str] = message_received.split()
 
-        if len(message_as_list) is not 3:
+        if len(message_as_list) != 3:
             return message
 
-        if 'oldest' in message_received:
-            message = self.return_posts('oldest', self.clean_message(message_as_list))
-        elif 'top' in message_received:
-            message = self.return_posts('top', self.clean_message(message_as_list))
+        if RedditBot.OLDEST in message_received:
+            message = self.return_posts(RedditBot.OLDEST, self.clean_message(message_as_list))
+        elif RedditBot.TOP in message_received:
+            message = self.return_posts(RedditBot.TOP, self.clean_message(message_as_list))
 
         return message
 
     def clean_message(self, message: List[str]) -> int:
         self.logger.debug("Sanitizing string for further processing")
         temp_integer = [value for value in message if value.isdigit()]
-        if len(temp_integer) is not 1:
+        if len(temp_integer) != 1:
             return 1
         return int(temp_integer[0])
 
     def return_posts(self, criteria: str, amount: int) -> List[str]:
-        pass
+        self.logger.debug(f"The criteria: {criteria} has been picked")
+        posts: List[RedditPost] = RedditScraper.read_from_file()
+        unseen_posts: List[RedditPost] = [post for post in posts if not post.seen]
+        formatted_list: List[str] = []
+
+        if criteria == RedditBot.OLDEST:
+            unseen_posts.sort(key=lambda x: x.unix_time)
+        if criteria == RedditBot.TOP:
+            unseen_posts.sort(key=lambda x: x.votes, reverse=True)
+
+        for post in unseen_posts[:amount]:
+            if post.is_self:
+                string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
+            else:
+                string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
+            formatted_list.append(string)
+            post.seen = True
+
+        RedditScraper.write_to_file(RedditScraper.merge(new_list=posts, existing_list=unseen_posts))
+
+        return formatted_list
 
 
 if __name__ == '__main__':

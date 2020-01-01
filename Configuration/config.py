@@ -53,7 +53,6 @@ class Config:
                     raise Exception(f"Missing option: {option} under {section}")
 
         self.slack_config.load_config(config_parser)
-        self.ping_config = PingConfig()
         self.ping_config.load_config(config_parser)
         self.jenkins_config.load_config(config_parser)
         self.reddit_config.load_config(config_parser)
@@ -101,7 +100,7 @@ class PingConfig(ConfigLoader):
 
     def __setitem__(self, key, value):
         value = as_list(value)
-        if key is 'addresses':
+        if key == 'addresses':
             self.addresses = value
         elif key is 'friendly_name':
             self.friendly_name = value
@@ -120,13 +119,13 @@ class JenkinsConfig(ConfigLoader):
         self.job_url: List[str] = []
 
     def __setitem__(self, key, value):
-        if key is 'username':
+        if key == 'username':
             self.username = value
-        elif key is 'password':
+        elif key == 'password':
             self.password = value
-        elif key is 'server_url':
+        elif key == 'server_url':
             self.server_url = value
-        elif key is 'job_url':
+        elif key == 'job_url':
             self.job_url = as_list(value)
 
     def load_config(self, config_parser: ConfigParser, **kwargs):
@@ -146,19 +145,19 @@ class RedditConfig(ConfigLoader):
         self.watchlist: List[str] = []
 
     def __setitem__(self, key, value):
-        if key is 'client_id':
+        if key == 'client_id':
             self.client_id = value
-        elif key is 'client_secret':
+        elif key == 'client_secret':
             self.client_secret = value
-        elif key is 'username':
+        elif key == 'username':
             self.username = value
-        elif key is 'password':
+        elif key == 'password':
             self.password = value
-        elif key is 'user_agent':
+        elif key == 'user_agent':
             self.user_agent = value
-        elif key is 'subreddits':
+        elif key == 'subreddits':
             self.subreddits = as_list(value)
-        elif key is 'watchlist':
+        elif key == 'watchlist':
             self.watchlist = as_list(value)
 
     def load_config(self, config_parser: ConfigParser, **kwargs):
@@ -173,9 +172,9 @@ class DarkSkyConfig(ConfigLoader):
         self.location: str = ""
 
     def __setitem__(self, key, value):
-        if key is 'key':
+        if key == 'key':
             self.key = value
-        elif key is 'location':
+        elif key == 'location':
             self.location = value
 
     def load_config(self, config_parser: ConfigParser, **kwargs):

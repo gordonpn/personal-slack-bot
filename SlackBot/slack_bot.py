@@ -67,8 +67,8 @@ class Bot:
             for a_message in message:
                 self.reply_with_message(a_message)
                 time.sleep(3)
-
-        self.reply_with_message(message)
+        else:
+            self.reply_with_message(message)
 
     def reply_welcome(self) -> str:
         list_replies: List[str] = [
