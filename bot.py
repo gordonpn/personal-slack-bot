@@ -1,4 +1,5 @@
 import sys
+import concurrent.futures
 
 import slack
 
@@ -18,7 +19,7 @@ def exit_bot(**payload):
     if is_human:
         text_received: str = data.get('text').lower()
         logger.debug(f"Passing: {text_received}")
-        bot.parse_message(text_received)
+        concurrent.futures.ThreadPoolExecutor().submit(bot.parse_message, text_received)
 
 
 @slack.RTMClient.run_on(event='hello')
@@ -28,6 +29,7 @@ def start_bot(**payload):
 
     bot = get_bot(data, web_client)
     bot.reply_with_message("Hello, here I am")
+    concurrent.futures.ThreadPoolExecutor().submit(bot.reddit_watch)
 
 
 @slack.RTMClient.run_on(event='goodbye')

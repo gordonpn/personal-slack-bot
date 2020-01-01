@@ -17,27 +17,25 @@ class PingBot:
         message = "Unrecognized command, the syntax is: ping [watch (optional)] [name or all]"
         is_member: List[str] = self.is_member(message_received)
 
-        if 'all' in message_received:
-            message = self.ping_devices()
-        elif 'watch' in message_received and 'all' in message_received:
-            message = self.set_watch()
-        elif 'watch' in message_received and is_member:
+        if 'watch' in message_received:
             message = self.set_watch(is_member)
+        elif 'all' in message_received:
+            message = self.ping_devices()
         elif is_member:
             message = self.ping_devices(is_member)
 
         return message
 
     def format_message(self, active: Dict[str, str]) -> str:
-        if not active:
-            self.logger.debug("Nothing passed in parameters for format message")
-            message: str = "None of the devices responded"
-        else:
+        if active:
             message: str = ""
             for name, ip in active.items():
                 devices: str = f"{name} ({ip})"
-                message = message + f"{devices}, "
-            message = message + "responded"
+                message += f"{devices}, "
+            message += "responded"
+        else:
+            self.logger.debug("Nothing passed in parameters for format message")
+            message: str = "None of the devices responded"
         return message
 
     def is_member(self, message: str) -> List[str]:
@@ -54,7 +52,7 @@ class PingBot:
 
     def clean_message(self, message: List[str]) -> List[str]:
         self.logger.debug("Sanitizing string for further processing")
-        return [value for value in message if value is not 'ping' or value is not 'watch' or value is not 'all']
+        return [value for value in message if value != 'ping' or value != 'watch' or value != 'all']
 
     def ping_devices(self, message: List[str] = None) -> str:
         ping_dict: Dict[str, str] = {}

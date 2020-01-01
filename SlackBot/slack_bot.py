@@ -1,4 +1,5 @@
 import time
+import concurrent.futures
 from random import random
 from typing import List
 
@@ -9,7 +10,7 @@ from Configuration.config import get_config
 from Configuration.logger import get_logger
 from Jenkins.jenkins_bot import JenkinsBot
 from PingBot.ping_bot import PingBot
-from Reddit.reddit_bot import RedditBot
+from Reddit.reddit_bot import RedditBot, RedditWatcher
 from Weather.weather_bot import WeatherBot
 
 
@@ -110,3 +111,17 @@ class Bot:
         message = f"I have {free_mem_in_mb} MB free in memory"
         self.logger.debug(f"Returning: {message}")
         return message
+
+    def reddit_watch(self) -> None:
+        self.logger.debug("Checking subreddits on watchlist")
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(RedditWatcher().check_new)
+            messages: List[str] = future.result()
+
+        if type(messages) == list and len(messages) > 0:
+            for a_message in messages:
+                self.reply_with_message(a_message)
+                time.sleep(3)
+
+        time.sleep(15 * 60)
+        self.reddit_watch()

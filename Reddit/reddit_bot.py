@@ -1,5 +1,5 @@
 import json
-from typing import List, Union, Set, Dict
+from typing import Dict, List, Set, Union
 
 import praw
 from praw import Reddit
@@ -24,7 +24,6 @@ class RedditScraper:
         fresh_hot_posts: List[RedditPost] = self.get_fresh_hot_posts()
         merged_posts: List[RedditPost] = self.merge(new_list=fresh_hot_posts, existing_list=previous_posts)
         self.write_to_file(merged_posts)
-        self.logger.debug("Done!")
 
     def clean_up(self):
         # todo: to be implemented
@@ -41,8 +40,10 @@ class RedditScraper:
         limit: int = 5
         time_filter: str = 'day'
         reddit_posts: List[RedditPost] = []
+        all_subreddits: List[str] = list(
+            set(self.config.reddit_config.subreddits + self.config.reddit_config.watchlist))
 
-        for subreddit in self.config.reddit_config.subreddits:
+        for subreddit in all_subreddits:
             submissions: ListingGenerator = self.reddit.subreddit(subreddit).top(limit=limit, time_filter=time_filter)
             for submission in submissions:
                 if not submission.stickied:
@@ -63,8 +64,9 @@ class RedditScraper:
         strictly_new_posts: Set[RedditPost] = set(new_list) - set(existing_list)
         dict_posts: Dict[str, RedditPost] = {post.id: post for post in existing_list}
 
-        for post in new_list:
-            dict_posts.get(post.id).votes = post.votes
+        if len(dict_posts) > 0:
+            for post in new_list:
+                dict_posts.get(post.id).votes = post.votes
 
         return list(strictly_new_posts) + list(dict_posts.values())
 
@@ -124,6 +126,31 @@ class RedditBot:
             unseen_posts.sort(key=lambda x: x.votes, reverse=True)
 
         for post in unseen_posts[:amount]:
+            if post.is_self:
+                string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
+            else:
+                string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
+            formatted_list.append(string)
+            post.seen = True
+
+        RedditScraper.write_to_file(RedditScraper.merge(new_list=posts, existing_list=unseen_posts))
+
+        return formatted_list
+
+
+class RedditWatcher:
+
+    def __init__(self):
+        self.config = get_config()
+        self.logger = get_logger()
+
+    def check_new(self) -> List[str]:
+        subs: List[str] = self.config.reddit_config.watchlist
+        posts: List[RedditPost] = RedditScraper.read_from_file()
+        unseen_posts: List[RedditPost] = [post for post in posts if not post.seen and post.subreddit in subs]
+        formatted_list: List[str] = []
+
+        for post in unseen_posts:
             if post.is_self:
                 string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
             else:
