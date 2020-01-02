@@ -66,7 +66,7 @@ class RedditScraper:
 
         if len(dict_posts) > 0:
             for post in new_list:
-                if dict_posts.get(post.id) is not None:
+                if dict_posts.get(post.id) is not None and post is not None:
                     dict_posts.get(post.id).votes = post.votes
 
         return list(strictly_new_posts) + list(dict_posts.values())
