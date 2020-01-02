@@ -1,5 +1,6 @@
-import time
 import concurrent.futures
+import sys
+import time
 from random import random
 from typing import List
 
@@ -44,7 +45,7 @@ class Bot:
             message = f"Hi <@{self.config.slack_config.user_id}>!"
         elif 'reboot' in message_received:
             self.reply_with_message("Aight imma head out")
-            exit()
+            sys.exit()
         elif 'ram' in message_received:
             message = self.reply_ram()
         elif 'cpu' in message_received and 'load' in message_received:
