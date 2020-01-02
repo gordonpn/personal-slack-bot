@@ -52,7 +52,7 @@ class RedditScraper:
                     votes = submission.score
                     link = submission.url
                     is_self = submission.is_self
-                    unix_time = submission.created_utc
+                    unix_time = int(submission.created_utc)
                     self.logger.debug(f"Parsing: post_id={post_id}")
                     a_reddit_post = RedditPost(title, subreddit, post_id, votes, link, unix_time, is_self, False)
                     reddit_posts.append(a_reddit_post)

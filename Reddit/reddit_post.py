@@ -9,7 +9,7 @@ class RedditPost:
         self.id: str = post_id
         self.votes: int = votes
         self.link: str = link
-        self.unix_time: time = unix_time
+        self.unix_time: int = unix_time
         self.is_self: bool = is_self
         self.seen: bool = seen
 
