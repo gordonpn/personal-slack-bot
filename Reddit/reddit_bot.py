@@ -64,9 +64,10 @@ class RedditScraper:
         strictly_new_posts: Set[RedditPost] = set(new_list) - set(existing_list)
         dict_posts: Dict[str, RedditPost] = {post.id: post for post in existing_list}
 
-        if len(dict_posts) > 0 and len(new_list) > 0:
+        if len(dict_posts) > 0:
             for post in new_list:
-                dict_posts.get(post.id).votes = post.votes
+                if dict_posts.get(post.id) is not None:
+                    dict_posts.get(post.id).votes = post.votes
 
         return list(strictly_new_posts) + list(dict_posts.values())
 
