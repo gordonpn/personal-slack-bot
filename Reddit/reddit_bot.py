@@ -71,6 +71,15 @@ class RedditScraper:
         return list(strictly_new_posts) + list(dict_posts.values())
 
     @staticmethod
+    def update(unseen_list: List[RedditPost], existing_list: List[RedditPost]) -> List[RedditPost]:
+        dict_posts: Dict[str, RedditPost] = {post.id: post for post in existing_list}
+
+        for post in unseen_list:
+            dict_posts.get(post.id).seen = True
+
+        return list(dict_posts.values())
+
+    @staticmethod
     def write_to_file(data: List[RedditPost], where: str = None) -> None:
         path = RedditScraper.ARCHIVE if where else RedditScraper.PATH
         with open(path, 'w+') as write_file:
@@ -133,7 +142,7 @@ class RedditBot:
             formatted_list.append(string)
             post.seen = True
 
-        RedditScraper.write_to_file(RedditScraper.merge(new_list=posts, existing_list=unseen_posts))
+        RedditScraper.write_to_file(RedditScraper.update(unseen_list=unseen_posts[:amount], existing_list=posts))
 
         return formatted_list
 
@@ -158,7 +167,7 @@ class RedditWatcher:
             formatted_list.append(string)
             post.seen = True
 
-        RedditScraper.write_to_file(RedditScraper.merge(new_list=posts, existing_list=unseen_posts))
+        RedditScraper.write_to_file(RedditScraper.update(unseen_list=unseen_posts, existing_list=posts))
 
         return formatted_list
 
