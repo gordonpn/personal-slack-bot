@@ -1,6 +1,6 @@
-# Personal (Butler) Slack bot
+# Personal Slack bot
 
-## Motivation
+## Description
 
 Initially I simply wanted a quick way to ping devices on my home local network from wherever I was.
 
@@ -15,6 +15,7 @@ Later, I realized how useful a Slack bot could be and started developing more fe
 *  Build Jenkins jobs on demand
 *  Notify when a Jenkins job is no longer in progress
 *  Send unread top posts from favorite Reddit subreddits
+*  Personalized and relative weather forecasts based on weather today and previous days 
 
 ## Prerequisites
 ````bash
@@ -52,6 +53,10 @@ location =
 ```
 All configurations are optional, depends on which features you want to use.
 
+## Usage
+
+The slack bot main starts in `bot.py` where it makes a connection with the Slack API and starts watching for commands from the user. If you'd like to scrape top Reddit posts, then the `reddit_bot.py` must be automated (with Jenkins for example).
+
 ## Roadmap/Todo
 
 * [x]  Rewrite in Python
@@ -62,9 +67,9 @@ All configurations are optional, depends on which features you want to use.
 * [x]  watch all addresses feature
 * [x]  load from external sources for addresses and jenkins url
 * [ ]  stop all threads or stop one thread
-* [ ]  refactor for better code maintainability
-* [ ]  integrate personalized weather forecasting
-* [ ]  return Reddit news on demand only, instead of periodically
+* [x]  refactor for better code maintainability
+* [x]  integrate personalized weather forecasting
+* [x]  return Reddit news on demand only, instead of periodically
 
 ## License
 
