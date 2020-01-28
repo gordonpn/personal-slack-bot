@@ -6,6 +6,15 @@ Initially I simply wanted a quick way to ping devices on my home local network f
 
 Later, I realized how useful a Slack bot could be and started developing more features for this personal Slack bot.
 
+---
+![GitHub](https://img.shields.io/github/license/gpnn/personal-slack-bot?style=flat-square)
+
+![GitHub top language](https://img.shields.io/github/languages/top/gpnn/personal-slack-bot?style=flat-square)
+![GitHub language count](https://img.shields.io/github/languages/count/gpnn/personal-slack-bot?style=flat-square)
+
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/gpnn/personal-slack-bot?style=flat-square)
+![GitHub last commit](https://img.shields.io/github/last-commit/gpnn/personal-slack-bot?style=flat-square)
+
 ## Features
 *  Ping a list of local IP addresses
 *  Ping a subset of those addresses
