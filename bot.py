@@ -28,7 +28,6 @@ def start_bot(**payload):
     web_client = payload['web_client']
 
     bot = get_bot(data, web_client)
-    bot.reply_with_message("Hello, here I am")
     concurrent.futures.ThreadPoolExecutor().submit(bot.reddit_watch)
 
 
@@ -38,7 +37,6 @@ def reply_bot(**payload):
     web_client = payload['web_client']
 
     bot = get_bot(data, web_client)
-    bot.reply_with_message("Aight imma head out")
     sys.exit()
 
 
