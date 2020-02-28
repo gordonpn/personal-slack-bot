@@ -31,6 +31,7 @@ class Config:
         self.jenkins_config = JenkinsConfig()
         self.reddit_config = RedditConfig()
         self.darksky_config = DarkSkyConfig()
+        self.monitor_config = MonitorConfig()
 
     def load_config(self):
         config_parser = ConfigParser()
@@ -39,7 +40,9 @@ class Config:
             'slack': ['token', 'bot_id', 'bot_channel', 'user_id'],
             'ping': ['friendly_name', 'addresses'],
             'jenkins': ['username', 'password', 'server_url', 'job_url'],
-            'reddit': ['client_id', 'client_secret', 'username', 'password', 'user_agent', 'subreddits', 'watchlist']
+            'reddit': ['client_id', 'client_secret', 'username', 'password', 'user_agent', 'subreddits', 'watchlist'],
+            'darksky': ['key', 'location'],
+            'monitor': ['monitor_list', 'titles']
         }
         if not os.path.exists(config_file):
             raise Exception(f"{config_file} not found")
@@ -57,10 +60,12 @@ class Config:
         self.jenkins_config.load_config(config_parser)
         self.reddit_config.load_config(config_parser)
         self.darksky_config.load_config(config_parser)
+        self.monitor_config.load_config(config_parser)
 
 
 class ConfigLoader:
     def __setitem__(self, key, value):
+        # Being overridden in subclasses
         pass
 
     def load_config(self, config_parser: ConfigParser, section: str):
@@ -176,6 +181,23 @@ class DarkSkyConfig(ConfigLoader):
             self.key = value
         elif key == 'location':
             self.location = value
+
+    def load_config(self, config_parser: ConfigParser, **kwargs):
+        super().load_config(config_parser, self.section)
+
+
+class MonitorConfig(ConfigLoader):
+    section = 'monitor'
+
+    def __init__(self):
+        self.monitor_list: List[str] = []
+        self.titles: List[str] = []
+
+    def __setitem__(self, key, value):
+        if key == 'monitor_list':
+            self.monitor_list = as_list(value)
+        elif key == 'titles':
+            self.titles = as_list(value)
 
     def load_config(self, config_parser: ConfigParser, **kwargs):
         super().load_config(config_parser, self.section)

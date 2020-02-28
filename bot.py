@@ -1,5 +1,5 @@
-import sys
 import concurrent.futures
+import sys
 
 import slack
 
@@ -29,14 +29,11 @@ def start_bot(**payload):
 
     bot = get_bot(data, web_client)
     concurrent.futures.ThreadPoolExecutor().submit(bot.reddit_watch)
+    concurrent.futures.ThreadPoolExecutor().submit(bot.site_watch)
 
 
 @slack.RTMClient.run_on(event='goodbye')
 def reply_bot(**payload):
-    data = payload['data']
-    web_client = payload['web_client']
-
-    bot = get_bot(data, web_client)
     sys.exit()
 
 

@@ -25,6 +25,7 @@ Later, I realized how useful a Slack bot could be and started developing more fe
 *  Notify when a Jenkins job is no longer in progress
 *  Send unread top posts from favorite Reddit subreddits
 *  Personalized and relative weather forecasts based on weather today and previous days 
+*  Notify user of a website being down
 
 ## Prerequisites
 ````bash
@@ -59,12 +60,17 @@ watchlist =
 [darksky]
 key = 
 location = 
+[monitor]
+monitor_list = 
+titles = 
 ```
 All configurations are optional, depends on which features you want to use.
 
 ## Usage
 
 The slack bot main starts in `bot.py` where it makes a connection with the Slack API and starts watching for commands from the user. If you'd like to scrape top Reddit posts, then the `reddit_bot.py` must be automated (with Jenkins for example).
+
+To use the site watch feature, you need to provide the web page title that the bot should be expecting (or part of the title) in the `titles` options in the config in the same order as you listed the sites to monitor in `monitor_list`.
 
 ## Roadmap/Todo
 
@@ -79,6 +85,7 @@ The slack bot main starts in `bot.py` where it makes a connection with the Slack
 * [x]  refactor for better code maintainability
 * [x]  integrate personalized weather forecasting
 * [x]  return Reddit news on demand only, instead of periodically
+* [x]  Website monitoring feature
 
 ## License
 

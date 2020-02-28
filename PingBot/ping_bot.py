@@ -46,7 +46,7 @@ class PingBot:
 
         intersection: Set[str] = set_from_config.intersection(set_from_message)
 
-        if len(intersection) > 0:
+        if intersection:
             return list(intersection)
         return []
 

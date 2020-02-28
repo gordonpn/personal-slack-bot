@@ -10,6 +10,7 @@ from uptime import uptime
 from Configuration.config import get_config
 from Configuration.logger import get_logger
 from Jenkins.jenkins_bot import JenkinsBot
+from Monitor.monitor_bot import MonitorBot
 from PingBot.ping_bot import PingBot
 from Reddit.reddit_bot import RedditBot, RedditWatcher
 from Weather.weather_bot import WeatherBot
@@ -119,10 +120,24 @@ class Bot:
             future = executor.submit(RedditWatcher().check_new)
             messages: List[str] = future.result()
 
-        if type(messages) == list and len(messages) > 0:
+        if type(messages) == list and messages:
             for a_message in messages:
                 self.reply_with_message(a_message)
                 time.sleep(3)
 
         time.sleep(15 * 60)
         self.reddit_watch()
+
+    def site_watch(self) -> None:
+        self.logger.debug("Monitoring sites")
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(MonitorBot().check_sites)
+            messages: List[str] = future.result()
+
+        if type(messages) == list and messages:
+            for a_message in messages:
+                self.reply_with_message(a_message)
+                time.sleep(3)
+
+        time.sleep(90 * 60)
+        self.site_watch()
