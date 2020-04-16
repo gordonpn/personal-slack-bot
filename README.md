@@ -7,24 +7,19 @@ Initially I simply wanted a quick way to ping devices on my home local network f
 Later, I realized how useful a Slack bot could be and started developing more features for this personal Slack bot.
 
 ---
-![GitHub](https://img.shields.io/github/license/gpnn/personal-slack-bot?style=flat-square)
+![GitHub](https://img.shields.io/github/license/gpnn/personal-slack-bot)
 
-![GitHub top language](https://img.shields.io/github/languages/top/gpnn/personal-slack-bot?style=flat-square)
-![GitHub language count](https://img.shields.io/github/languages/count/gpnn/personal-slack-bot?style=flat-square)
+![GitHub top language](https://img.shields.io/github/languages/top/gpnn/personal-slack-bot)
+![GitHub language count](https://img.shields.io/github/languages/count/gpnn/personal-slack-bot)
 
-![GitHub commit activity](https://img.shields.io/github/commit-activity/m/gpnn/personal-slack-bot?style=flat-square)
-![GitHub last commit](https://img.shields.io/github/last-commit/gpnn/personal-slack-bot?style=flat-square)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/gpnn/personal-slack-bot)
+![GitHub last commit](https://img.shields.io/github/last-commit/gpnn/personal-slack-bot)
 
 ## Features
-*  Ping a list of local IP addresses
-*  Ping a subset of those addresses
-*  Set up a watch for certain addresses or all, to be notified when they come back online
+
 *  Tell the uptime of the server it's currently running on
 *  Tell the average CPU load
-*  Build Jenkins jobs on demand
-*  Notify when a Jenkins job is no longer in progress
 *  Send unread top posts from favorite Reddit subreddits
-*  Personalized and relative weather forecasts based on weather today and previous days 
 *  Notify user of a website being down
 
 ## Prerequisites
@@ -37,10 +32,10 @@ pip install -r requirements.txt
 Create a `bot.conf` file as such:
 ```
 [slack]
-token = 
-bot_id = 
+token =
+bot_id =
 bot_channel =
-user_id = 
+user_id =
 [ping]
 friendly_name =
 addresses =
@@ -56,13 +51,13 @@ password =
 user_agent =
 username =
 subreddits =
-watchlist = 
+watchlist =
 [darksky]
-key = 
-location = 
+key =
+location =
 [monitor]
-monitor_list = 
-titles = 
+monitor_list =
+titles =
 ```
 All configurations are optional, depends on which features you want to use.
 

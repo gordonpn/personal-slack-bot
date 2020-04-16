@@ -300,4 +300,7 @@ venv/lib/python3.7/site-packages/wrapt-1.11.2-py3.7.egg-info/
 venv/lib/python3.7/site-packages/wrapt/__init__.py
 venv/lib/python3.7/site-packages/wrapt/decorators.py
 venv/lib/python3.7/site-packages/wrapt/importer.py
-venv/lib/python3.7/site-packages/wrapt/wrappers.py
+venv/lib/python3.7/site-packages/wrapt/wrappers.pyvenv
+posts.json
+bot.conf
+venv/
