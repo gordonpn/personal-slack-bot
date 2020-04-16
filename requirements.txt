@@ -1,7 +1,5 @@
-slackclient==2.5.0
-slack
-psutil
-uptime
-requests
-python-jenkins
-praw
+slackclient~=2.5
+psutil~=5.7
+uptime~=3.0.1
+requests~=2.23
+praw~=6.5.1

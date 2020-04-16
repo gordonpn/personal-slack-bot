@@ -304,3 +304,4 @@ venv/lib/python3.7/site-packages/wrapt/wrappers.pyvenv
 posts.json
 bot.conf
 venv/
+.mypy_cache/

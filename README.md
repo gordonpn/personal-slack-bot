@@ -17,8 +17,6 @@ Later, I realized how useful a Slack bot could be and started developing more fe
 
 ## Features
 
-*  Tell the uptime of the server it's currently running on
-*  Tell the average CPU load
 *  Send unread top posts from favorite Reddit subreddits
 *  Notify user of a website being down
 
