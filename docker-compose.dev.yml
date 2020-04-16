@@ -1,0 +1,56 @@
+version: '3.7'
+services:
+
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+      - MONGO_NON_ROOT_ROLE
+      - MONGO_NON_ROOT_USERNAME
+      - MONGO_NON_ROOT_PASSWORD
+    expose:
+      - 27017
+    volumes:
+      - dev-mongodb-slackbot:/data/db
+      - ./.docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+  reddit-scraper:
+    container_name: reddit-scraper
+    build:
+      context: ./reddit_scraper
+      dockerfile: Dockerfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+      - MONGO_NON_ROOT_ROLE
+      - MONGO_NON_ROOT_USERNAME
+      - MONGO_NON_ROOT_PASSWORD
+    depends_on:
+      - mongo-db
+    restart: unless-stopped
+
+  slack-bot:
+    container_name: slack-bot
+    build:
+      context: ./slack_bot
+      dockerfile: Dockerfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME
+      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_INITDB_DATABASE
+      - MONGO_NON_ROOT_ROLE
+      - MONGO_NON_ROOT_USERNAME
+      - MONGO_NON_ROOT_PASSWORD
+    depends_on:
+      - mongo-db
+    restart: unless-stopped
+
+volumes:
+  dev-mongodb-slackbot:
+    external:
+      name: dev-mongodb-slackbot
