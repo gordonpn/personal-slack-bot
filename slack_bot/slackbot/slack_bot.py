@@ -8,8 +8,8 @@ from typing import List
 import psutil
 from uptime import uptime
 
-from Monitor.monitor_bot import MonitorBot
-from Reddit.reddit_bot import RedditBot, RedditWatcher
+from monitor.monitor_bot import MonitorBot
+from reddit.reddit_bot import RedditBot, RedditWatcher
 
 logger = logging.getLogger("slack_bot")
 

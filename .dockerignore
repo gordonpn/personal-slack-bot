@@ -1,7 +1,0 @@
-.gitignore
-README.md
-LICENSE
-Dockerfile
-.dockerignore
-docker-compose.yml
-.drone.yml

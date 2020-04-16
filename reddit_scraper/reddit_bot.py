@@ -6,7 +6,7 @@ import praw
 from praw import Reddit
 from praw.models import ListingGenerator
 
-from Reddit.reddit_post import RedditPost
+from reddit.reddit_post import RedditPost
 
 logger = logging.getLogger("slack_bot")
 
