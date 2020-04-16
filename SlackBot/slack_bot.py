@@ -1,4 +1,5 @@
 import concurrent.futures
+import logging
 import sys
 import time
 from random import random
@@ -7,18 +8,16 @@ from typing import List
 import psutil
 from uptime import uptime
 
-from Configuration.config import get_config
-from Configuration.logger import get_logger
 from Monitor.monitor_bot import MonitorBot
 from Reddit.reddit_bot import RedditBot, RedditWatcher
+
+logger = logging.getLogger("slack_bot")
 
 
 class Bot:
     def __init__(self, data, web_client):
-        self.logger = get_logger()
         self.data = data
         self.web_client = web_client
-        self.config = get_config()
         self.data["channel"] = self.config.slack_config.bot_channel
         self.data["user"] = self.config.slack_config.bot_id
         self.channel_id = data.get("channel")
@@ -49,7 +48,7 @@ class Bot:
             self.reply_with_message(message)
 
     def reddit_watch(self) -> None:
-        self.logger.debug("Checking subreddits on watchlist")
+        logger.debug("Checking subreddits on watchlist")
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(RedditWatcher().check_new)
             messages: List[str] = future.result()
@@ -63,7 +62,7 @@ class Bot:
         self.reddit_watch()
 
     def site_watch(self) -> None:
-        self.logger.debug("Monitoring sites")
+        logger.debug("Monitoring sites")
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(MonitorBot().check_sites)
             messages: List[str] = future.result()

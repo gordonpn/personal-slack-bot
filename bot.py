@@ -1,7 +1,12 @@
 import concurrent.futures
+import logging
 import sys
+from logging.config import fileConfig
 
 from slack import RTMClient
+
+logging.config.fileConfig("logging.ini", disable_existing_loggers=False)
+logger = logging.getLogger("slack_bot")
 
 
 @RTMClient.run_on(event="message")
@@ -34,7 +39,5 @@ def reply_bot(**payload):
 
 
 if __name__ == "__main__":
-    logger = get_logger()
-    config = get_config()
     rtm_client = RTMClient(token=config.slack_config.token)
     rtm_client.start()
