@@ -23,9 +23,10 @@ def start_schedule():
     schedule.every(10).to(20).minutes.do(job)
 
     while True:
+        logger.debug("Pending scheduled job")
         schedule.run_pending()
         time.sleep(1)
 
 
 if __name__ == "__main__":
-    pass
+    start_schedule()
