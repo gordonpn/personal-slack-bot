@@ -4,6 +4,7 @@ from logging.config import fileConfig
 
 import schedule
 
+from .scraper.scraper import RedditScraper
 from .healthcheck.healthcheck import HealthCheck, Status
 
 logging.config.fileConfig("logging.ini", disable_existing_loggers=False)
@@ -12,7 +13,8 @@ logger = logging.getLogger("reddit_scraper")
 
 def job():
     try:
-        pass
+        scraper = RedditScraper()
+        scraper.run()
     except Exception:
         HealthCheck.ping_status(Status.FAIL)
         raise Exception
