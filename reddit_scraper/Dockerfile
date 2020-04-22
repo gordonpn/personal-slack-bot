@@ -9,4 +9,4 @@ USER appuser
 
 COPY . .
 
-CMD ["python"]
+CMD ["python", "./main.py"]
