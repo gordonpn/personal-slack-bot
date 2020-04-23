@@ -2,15 +2,14 @@ import logging
 import os
 from typing import List
 
-import pymongo
+import praw
+from praw import Reddit
+from praw.models import ListingGenerator
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
 
 from ..reddit_post.reddit_post import RedditPost
-import praw
-from praw import Reddit
-from praw.models import ListingGenerator
 
 logger = logging.getLogger("reddit_scraper")
 
@@ -96,7 +95,8 @@ class RedditScraper:
         # todo insert data into collection
         # update if already exists
         # if using dataclass then
-        # json_data = json.loads(dataclass.to_json())
+        # json_data = json.loads(reddit_post.to_json())
 
     def clean_up_old(self):
+        # todo delete posts from collection that are older than two months
         pass

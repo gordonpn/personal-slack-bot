@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.8'
 services:
 
   mongo-db:
@@ -24,12 +24,15 @@ services:
       context: ./reddit_scraper
       dockerfile: Dockerfile
     environment:
-      - MONGO_INITDB_ROOT_USERNAME
-      - MONGO_INITDB_ROOT_PASSWORD
+      - MONGO_COLLECTION
       - MONGO_INITDB_DATABASE
-      - MONGO_NON_ROOT_ROLE
-      - MONGO_NON_ROOT_USERNAME
       - MONGO_NON_ROOT_PASSWORD
+      - MONGO_NON_ROOT_USERNAME
+      - MONGO_SETTINGS
+      - REDDIT_CLIENT_ID
+      - REDDIT_CLIENT_SECRET
+      - REDDIT_PASSWORD
+      - REDDIT_USERNAME
     depends_on:
       - mongo-db
     restart: unless-stopped
@@ -40,10 +43,7 @@ services:
       context: ./slack_bot
       dockerfile: Dockerfile
     environment:
-      - MONGO_INITDB_ROOT_USERNAME
-      - MONGO_INITDB_ROOT_PASSWORD
       - MONGO_INITDB_DATABASE
-      - MONGO_NON_ROOT_ROLE
       - MONGO_NON_ROOT_USERNAME
       - MONGO_NON_ROOT_PASSWORD
     depends_on:
