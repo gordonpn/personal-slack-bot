@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from typing import List
 
 import praw
@@ -84,7 +85,7 @@ class RedditScraper:
                 a_reddit_post = RedditPost(
                     title=title,
                     subreddit=subscription,
-                    id=post_id,
+                    post_id=post_id,
                     votes=votes,
                     link=link,
                     unix_time=unix_time,
@@ -95,14 +96,19 @@ class RedditScraper:
 
         return reddit_posts
 
-    def update_db(self, db: Database, posts):
+    def update_db(self, db: Database, posts: List[RedditPost]):
         collection: Collection = db[self.db_collection]
 
-        # todo insert data into collection
-        # update if already exists
-        # if using dataclass then
-        # json_data = json.loads(reddit_post.to_json())
+        for post in posts:
+            collection.update_one(
+                filter={"post_id": post.post_id}, update=post.to_json(), upsert=True
+            )
 
-    def clean_up_old(self):
-        # todo delete posts from collection that are older than two months
-        pass
+    def clean_up_old(self, db: Database):
+        collection: Collection = db[self.db_collection]
+
+        two_months: int = 5184000
+        unix_time_now: int = int(time.time())
+        two_months_ago: int = unix_time_now - two_months
+
+        collection.delete_many(filter={"unix_time": {"$lte": two_months_ago}})

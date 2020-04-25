@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class RedditPost:
     title: str
     subreddit: str
-    id: str
+    post_id: str
     votes: int
     link: str
     unix_time: int
