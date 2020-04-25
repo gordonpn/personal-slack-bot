@@ -3,10 +3,12 @@ import os
 from typing import List
 
 import praw
+from bson.json_util import dumps
 from praw import Reddit
 from praw.models import ListingGenerator
 from pymongo import MongoClient
 from pymongo.collection import Collection
+from pymongo.cursor import Cursor
 from pymongo.database import Database
 
 from ..reddit_post.reddit_post import RedditPost
@@ -52,10 +54,13 @@ class RedditScraper:
 
     def check_subscriptions(self, db: Database) -> List[str]:
         collection: Collection = db[self.db_settings]
+        doc: Cursor = collection.find_one()
 
-        # todo get list of subreddits subscribed to and return said list
+        if doc is None:
+            return []
 
-        return []
+        configs = dumps(doc)
+        return configs.get("subreddits", [])
 
     def scrape(self, reddit: Reddit, subscriptions: List[str]) -> List[RedditPost]:
         limit: int = 5
@@ -67,25 +72,26 @@ class RedditScraper:
                 limit=limit, time_filter=time_filter
             )
             for submission in submissions:
-                if not submission.stickied:
-                    title = submission.title
-                    post_id = submission.id
-                    votes = submission.score
-                    link = submission.url
-                    is_self = submission.is_self
-                    unix_time = int(submission.created_utc)
-                    logger.debug(f"Parsing: post_id={post_id}")
-                    a_reddit_post = RedditPost(
-                        title=title,
-                        subreddit=subscription,
-                        id=post_id,
-                        votes=votes,
-                        link=link,
-                        unix_time=unix_time,
-                        is_self=is_self,
-                        seen=False,
-                    )
-                    reddit_posts.append(a_reddit_post)
+                if submission.stickied:
+                    continue
+                title = submission.title
+                post_id = submission.id
+                votes = submission.score
+                link = submission.url
+                is_self = submission.is_self
+                unix_time = int(submission.created_utc)
+                logger.debug(f"Parsing: post_id={post_id}")
+                a_reddit_post = RedditPost(
+                    title=title,
+                    subreddit=subscription,
+                    id=post_id,
+                    votes=votes,
+                    link=link,
+                    unix_time=unix_time,
+                    is_self=is_self,
+                    seen=False,
+                )
+                reddit_posts.append(a_reddit_post)
 
         return reddit_posts
 
