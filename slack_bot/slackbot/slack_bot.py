@@ -80,15 +80,31 @@ class Bot:
             else:
                 self.reply(f"Unsuccessfully subscribed to {subreddit}")
             return
-        doc = dumps(cursor)
-        doc_id: int = doc.get("_id")
-        collection.find_one_and_update(
-            filter={"_id": doc_id}, update={"subreddits": {"$push": subreddit}}
+        doc_id: int = dumps(cursor).get("_id")
+        res = collection.find_one_and_update(
+            filter={"_id": doc_id}, update={"$push": {"subreddits": subreddit}}
         )
+        if res is not None:
+            self.reply("Subscription successful")
+            self.list_subscriptions()
+        else:
+            self.reply("Subscription unsuccessful")
 
     def unsubscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
-        # todo find one and pop the matching subreddit if exists
+        cursor: Cursor = collection.find_one()
+        if cursor is None:
+            self.reply("You are not currently subscribed to any subreddit")
+            return
+        doc_id: int = dumps(cursor).get("_id")
+        res = collection.find_one_and_update(
+            filter={"_id": doc_id}, update={"$pull": {"subreddits": subreddit}}
+        )
+        if res is not None:
+            self.reply("Unsubscription successful")
+            self.list_subscriptions()
+        else:
+            self.reply("Unsubscription unsuccessful")
 
     def list_subscriptions(self) -> None:
         collection = self.get_settings_collection()
