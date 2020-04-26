@@ -43,6 +43,10 @@ services:
       context: ./slack_bot
       dockerfile: Dockerfile
     environment:
+      - SLACK_TOKEN
+      - BOT_ID
+      - BOT_CHANNEL
+      - USER_ID
       - MONGO_INITDB_DATABASE
       - MONGO_NON_ROOT_USERNAME
       - MONGO_NON_ROOT_PASSWORD

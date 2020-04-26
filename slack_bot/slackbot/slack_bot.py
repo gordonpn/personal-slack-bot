@@ -1,15 +1,8 @@
 import concurrent.futures
 import logging
-import sys
+import os
 import time
-from random import random
 from typing import List
-
-import psutil
-from uptime import uptime
-
-from monitor.monitor_bot import MonitorBot
-from reddit.reddit_bot import RedditBot, RedditWatcher
 
 logger = logging.getLogger("slack_bot")
 
@@ -18,12 +11,12 @@ class Bot:
     def __init__(self, data, web_client):
         self.data = data
         self.web_client = web_client
-        self.data["channel"] = self.config.slack_config.bot_channel
-        self.data["user"] = self.config.slack_config.bot_id
+        self.data["channel"] = os.getenv("BOT_CHANNEL")
+        self.data["user"] = os.getenv("BOT_ID")
         self.channel_id = data.get("channel")
         self.user = data.get("user")
 
-    def reply_with_message(self, message: str = None):
+    def reply(self, message: str = None):
         if not message:
             message = "Let me check that for you."
 
@@ -31,21 +24,19 @@ class Bot:
             channel=self.channel_id, text=message, as_user=True
         )
 
-    def parse_message(self, message_received: str = None):
+    def parse_command(self, message_received: str = None):
         message = "I do not recognize that command"
-
-        if "hello" in message_received:
-            message = f"Hi <@{self.config.slack_config.user_id}>!"
-        elif "reddit" in message_received:
+        # todo parse the message a second time here to see which option user wants
+        if "reddit" in message_received:
             reddit_bot = RedditBot()
-            message = reddit_bot.parse_message(message_received)
+            message = reddit_bot.parse_command(message_received)
 
         if type(message) == list:
             for a_message in message:
-                self.reply_with_message(a_message)
+                self.reply(a_message)
                 time.sleep(3)
         else:
-            self.reply_with_message(message)
+            self.reply(message)
 
     def reddit_watch(self) -> None:
         logger.debug("Checking subreddits on watchlist")
@@ -55,22 +46,23 @@ class Bot:
 
         if type(messages) == list and messages:
             for a_message in messages:
-                self.reply_with_message(a_message)
+                self.reply(a_message)
                 time.sleep(3)
 
-        time.sleep(15 * 60)
+        time.sleep(30 * 60)
         self.reddit_watch()
 
-    def site_watch(self) -> None:
-        logger.debug("Monitoring sites")
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(MonitorBot().check_sites)
-            messages: List[str] = future.result()
+    def subscribe(self):
+        pass
 
-        if type(messages) == list and messages:
-            for a_message in messages:
-                self.reply_with_message(a_message)
-                time.sleep(3)
+    def unsubscribe(self):
+        pass
 
-        time.sleep(90 * 60)
-        self.site_watch()
+    def list_subscriptions(self):
+        pass
+
+    def format_message(self):
+        pass
+
+    def check_subscriptions(self):
+        pass
