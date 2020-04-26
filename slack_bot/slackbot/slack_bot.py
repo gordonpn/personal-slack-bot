@@ -53,20 +53,6 @@ class Bot:
             elif command == "unsub":
                 self.unsubscribe(subreddit_name)
 
-    def reddit_watch(self) -> None:
-        logger.debug("Checking subreddits on watchlist")
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            future = executor.submit(RedditWatcher().check_new)
-            messages: List[str] = future.result()
-
-        if type(messages) == list and messages:
-            for a_message in messages:
-                self.reply(a_message)
-                time.sleep(3)
-
-        time.sleep(30 * 60)
-        self.reddit_watch()
-
     def subscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
         if not self.validate_subreddit(subreddit):
@@ -116,9 +102,29 @@ class Bot:
         subs: List[str] = doc.get("subreddits", [])
         self.reply(f"You are subscribed to {', '.join(subs)}")
 
-    def check_subscriptions(self) -> None:
+    def reddit_watch(self) -> None:
+        logger.debug("Checking database for unseen posts")
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(self.check_subscriptions)
+            messages: List[str] = future.result()
+
+        if type(messages) == list and messages:
+            for a_message in messages:
+                self.reply(a_message)
+                time.sleep(3)
+
+        time.sleep(30 * 60)
+        self.reddit_watch()
+
+    def check_subscriptions(self) -> List[str]:
         collection = self.get_data_collection()
-        # todo automate checking the database for any unseen posts
+        cursor: Cursor = collection.find(filter={"unseen": True})
+        if cursor is None:
+            return []
+        documents = dumps(cursor)
+        if type(documents) != list:
+            return self.format_message(list(documents))
+        return self.format_message(documents)
 
     def validate_subreddit(self, subreddit: str) -> bool:
         res: Response = requests.head(url=f"https://reddit.com/r/{subreddit}")
