@@ -2,7 +2,13 @@ import concurrent.futures
 import logging
 import os
 import time
-from typing import List
+from typing import Dict, List, Union
+
+from pymongo import MongoClient
+from pymongo.collection import Collection
+from pymongo.database import Database
+
+from ..reddit_post.reddit_post import RedditPost
 
 logger = logging.getLogger("slack_bot")
 
@@ -15,6 +21,11 @@ class Bot:
         self.data["user"] = os.getenv("BOT_ID")
         self.channel_id = data.get("channel")
         self.user = data.get("user")
+        self.db_name = os.getenv("MONGO_INITDB_DATABASE")
+        self.db_username = os.getenv("MONGO_NON_ROOT_USERNAME")
+        self.db_password = os.getenv("MONGO_NON_ROOT_PASSWORD")
+        self.db_collection = os.getenv("MONGO_COLLECTION")
+        self.db_settings = os.getenv("MONGO_SETTINGS")
 
     def reply(self, message: str = None):
         if not message:
@@ -53,16 +64,42 @@ class Bot:
         self.reddit_watch()
 
     def subscribe(self):
-        pass
+        collection = self.get_settings_collection()
+        # todo
 
     def unsubscribe(self):
-        pass
+        collection = self.get_settings_collection()
+        # todo
 
     def list_subscriptions(self):
-        pass
+        collection = self.get_settings_collection()
+        # todo
 
-    def format_message(self):
-        pass
+    def format_message(self, posts: List[RedditPost]) -> List[str]:
+        formatted_list: List[str] = []
+        for post in posts:
+            if post.is_self:
+                string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
+            else:
+                string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}> "
+            formatted_list.append(string)
+        return formatted_list
 
     def check_subscriptions(self):
-        pass
+        collection = self.get_data_collection()
+        # todo
+
+    def connect_to_db(self) -> Database:
+        logger.debug("Making connection to mongodb")
+        uri: str = f"mongodb://{self.db_username}:{self.db_password}@mongo-db:27017/{self.db_name}"
+        connection: MongoClient = MongoClient(uri)
+        db: Database = connection[self.db_name]
+        return db
+
+    def get_settings_collection(self) -> Collection:
+        db = self.connect_to_db()
+        return db.collection[self.db_settings]
+
+    def get_data_collection(self) -> Collection:
+        db = self.connect_to_db()
+        return db.collection[self.db_collection]

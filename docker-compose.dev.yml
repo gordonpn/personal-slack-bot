@@ -50,6 +50,8 @@ services:
       - MONGO_INITDB_DATABASE
       - MONGO_NON_ROOT_USERNAME
       - MONGO_NON_ROOT_PASSWORD
+      - MONGO_COLLECTION
+      - MONGO_SETTINGS
     depends_on:
       - mongo-db
     restart: unless-stopped
