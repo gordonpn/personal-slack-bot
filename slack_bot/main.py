@@ -1,8 +1,10 @@
 import concurrent.futures
 import logging
 import os
+import re
 import sys
 from logging.config import fileConfig
+from re import Match
 
 from slack import RTMClient
 
@@ -19,11 +21,14 @@ def reply_bot(**payload):
 
     is_human: bool = data.get("user") == os.getenv("USER_ID")
     bot = Bot(data, web_client)
-    # todo parse the message with regex
     if is_human:
-        text_received: str = data.get("text").lower()
-        logger.debug(f"Passing: {text_received}")
-        concurrent.futures.ThreadPoolExecutor().submit(bot.parse_command, text_received)
+        text_received: str = data.get("text").lower().strip()
+        pattern: str = r"((reddit)\s+(unsub|sub)\s+(\w*)$)|((reddit)\s+(subs)$)"
+        match: Match = re.match(pattern, text_received)
+        if match is None:
+            bot.reply("Invalid syntax\nSyntax: reddit [sub|unsub|subs] [SUBREDDIT]")
+        else:
+            concurrent.futures.ThreadPoolExecutor().submit(bot.parse_command, match)
 
 
 @RTMClient.run_on(event="hello")

@@ -2,6 +2,7 @@ import concurrent.futures
 import logging
 import os
 import time
+from re import Match
 from typing import Dict, List, Union
 
 from pymongo import MongoClient
@@ -35,19 +36,17 @@ class Bot:
             channel=self.channel_id, text=message, as_user=True
         )
 
-    def parse_command(self, message_received: str = None):
-        message = "I do not recognize that command"
-        # todo parse the message a second time here to see which option user wants
-        if "reddit" in message_received:
-            reddit_bot = RedditBot()
-            message = reddit_bot.parse_command(message_received)
-
-        if type(message) == list:
-            for a_message in message:
-                self.reply(a_message)
-                time.sleep(3)
+    def parse_command(self, text_match: Match):
+        command: str = text_match.group(2)
+        if command == "subs":
+            self.list_subscriptions()
         else:
-            self.reply(message)
+            subreddit_name: str = text_match.group(3)
+
+            if command == "sub":
+                self.subscribe(subreddit_name)
+            elif command == "unsub":
+                self.unsubscribe(subreddit_name)
 
     def reddit_watch(self) -> None:
         logger.debug("Checking subreddits on watchlist")
@@ -63,17 +62,25 @@ class Bot:
         time.sleep(30 * 60)
         self.reddit_watch()
 
-    def subscribe(self):
+    def subscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
-        # todo
+        # todo find one and append the subreddit if pass validation
 
-    def unsubscribe(self):
+    def unsubscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
-        # todo
+        # todo find one and pop the matching subreddit if exists
 
-    def list_subscriptions(self):
+    def list_subscriptions(self) -> None:
         collection = self.get_settings_collection()
-        # todo
+        # todo find one and return the value (array of str) of key "settings"
+
+    def check_subscriptions(self) -> None:
+        collection = self.get_data_collection()
+        # todo automate checking the database for any unseen posts
+
+    def validate_subreddit(self):
+        # todo use requests library to check if the subreddit is valid
+        pass
 
     def format_message(self, posts: List[RedditPost]) -> List[str]:
         formatted_list: List[str] = []
@@ -84,10 +91,6 @@ class Bot:
                 string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}> "
             formatted_list.append(string)
         return formatted_list
-
-    def check_subscriptions(self):
-        collection = self.get_data_collection()
-        # todo
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")
