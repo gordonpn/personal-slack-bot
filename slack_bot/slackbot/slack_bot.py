@@ -72,8 +72,19 @@ class Bot:
         if not self.validate_subreddit(subreddit):
             self.reply("Invalid subreddit, please check the subreddit name")
             return
-        collection.update_one(upsert=True)
-        # todo find one and append the subreddit
+        cursor: Cursor = collection.find_one()
+        if cursor is None:
+            res = collection.insert_one({"subreddits": [subreddit]})
+            if type(res.inserted_id) == int:
+                self.reply(f"Successfully subscribed to {subreddit}")
+            else:
+                self.reply(f"Unsuccessfully subscribed to {subreddit}")
+            return
+        doc = dumps(cursor)
+        doc_id: int = doc.get("_id")
+        collection.find_one_and_update(
+            filter={"_id": doc_id}, update={"subreddits": {"$push": subreddit}}
+        )
 
     def unsubscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
@@ -101,9 +112,9 @@ class Bot:
         formatted_list: List[str] = []
         for post in posts:
             if post.is_self:
-                string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}>"
+                string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.post_id}>"
             else:
-                string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.id}> "
+                string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.post_id}> "
             formatted_list.append(string)
         return formatted_list
 
