@@ -3,8 +3,13 @@ import logging
 import os
 import time
 from re import Match
-from typing import Dict, List, Union
+from typing import Any, Dict, List
 
+from bson.json_util import dumps
+from pymongo.cursor import Cursor
+from requests import Response
+
+import requests
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
@@ -64,7 +69,11 @@ class Bot:
 
     def subscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
-        # todo find one and append the subreddit if pass validation
+        if not self.validate_subreddit(subreddit):
+            self.reply("Invalid subreddit, please check the subreddit name")
+            return
+        collection.update_one(upsert=True)
+        # todo find one and append the subreddit
 
     def unsubscribe(self, subreddit: str) -> None:
         collection = self.get_settings_collection()
@@ -72,15 +81,21 @@ class Bot:
 
     def list_subscriptions(self) -> None:
         collection = self.get_settings_collection()
-        # todo find one and return the value (array of str) of key "settings"
+        cursor: Cursor = collection.find_one()
+        if cursor is None:
+            self.reply("You are currently not subscribed to any subreddits")
+            return
+        doc: Dict[str, Any] = dumps(cursor)
+        subs: List[str] = doc.get("subreddits", [])
+        self.reply(f"You are subscribed to {', '.join(subs)}")
 
     def check_subscriptions(self) -> None:
         collection = self.get_data_collection()
         # todo automate checking the database for any unseen posts
 
-    def validate_subreddit(self):
-        # todo use requests library to check if the subreddit is valid
-        pass
+    def validate_subreddit(self, subreddit: str) -> bool:
+        res: Response = requests.head(url=f"https://reddit.com/r/{subreddit}")
+        return bool(res.ok)
 
     def format_message(self, posts: List[RedditPost]) -> List[str]:
         formatted_list: List[str] = []
