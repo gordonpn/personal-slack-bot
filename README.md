@@ -6,9 +6,7 @@ I created this project because I wanted to be notified of hot new posts on selec
 
 ---
 [![Build Status](https://drone.gordon-pn.com/api/badges/gordonpn/personal-slack-bot/status.svg?ref=refs/heads/develop)](https://drone.gordon-pn.com/gordonpn/personal-slack-bot)
-![Healthchecks.io for scraper](https://healthchecks.io/badge/ca24ff5d-8821-4d86-8a5a-dc92cf/kCadkBM0.svg)
-![Healthchecks.io for slack bot](https://healthchecks.io/badge/ca24ff5d-8821-4d86-8a5a-dc92cf/kCadkBM0.svg)
-# todo implement healthchecks
+![Healthchecks.io](https://healthchecks.io/badge/ca24ff5d-8821-4d86-8a5a-dc92cf/kCadkBM0.svg)
 ![Last commit on develop](https://badgen.net/github/last-commit/gordonpn/reddit-slack-bot/develop)
 ![License](https://badgen.net/github/license/gordonpn/reddit-slack-bot)
 
@@ -49,6 +47,8 @@ List of environment variables:
 | REDDIT_USERNAME            | Username of the Reddit scraper bot                                                        |
 | SLACK_TOKEN                | Slack token needed for real-time messaging                                                |
 | USER_ID                    | Your ID on the Slack workspace where this bot is being used                               |
+| SCRAPER_HC_UUID            | Healthcheck UUID for scraper                                                              |
+| SLACK_HC_UUID              | Healthcheck UUID for slack bot                                                            |
 
 ## Usage
 

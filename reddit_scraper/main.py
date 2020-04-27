@@ -12,12 +12,14 @@ logger = logging.getLogger("reddit_scraper")
 
 
 def job():
+    HealthCheck.ping_status(Status.START)
     try:
         scraper = RedditScraper()
         scraper.run()
     except Exception:
         HealthCheck.ping_status(Status.FAIL)
         raise Exception
+    HealthCheck.ping_status(Status.SUCCESS)
 
 
 def start_schedule():

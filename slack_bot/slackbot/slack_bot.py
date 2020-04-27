@@ -14,6 +14,7 @@ from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
 
+from ..healthcheck.healthcheck import HealthCheck, Status
 from ..reddit_post.reddit_post import RedditPost
 
 logger = logging.getLogger("slack_bot")
@@ -103,6 +104,7 @@ class Bot:
         self.reply(f"You are subscribed to {', '.join(subs)}")
 
     def reddit_watch(self) -> None:
+        HealthCheck.ping_status(Status.START)
         logger.debug("Checking database for unseen posts")
         with concurrent.futures.ThreadPoolExecutor() as executor:
             future = executor.submit(self.check_subscriptions)
@@ -112,7 +114,7 @@ class Bot:
             for a_message in messages:
                 self.reply(a_message)
                 time.sleep(3)
-
+        HealthCheck.ping_status(Status.SUCCESS)
         time.sleep(30 * 60)
         self.reddit_watch()
 

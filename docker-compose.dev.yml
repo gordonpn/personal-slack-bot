@@ -33,6 +33,7 @@ services:
       - REDDIT_CLIENT_SECRET
       - REDDIT_PASSWORD
       - REDDIT_USERNAME
+      - SCRAPER_HC_UUID
     depends_on:
       - mongo-db
     restart: unless-stopped
@@ -52,6 +53,7 @@ services:
       - MONGO_NON_ROOT_PASSWORD
       - MONGO_COLLECTION
       - MONGO_SETTINGS
+      - SLACK_HC_UUID
     depends_on:
       - mongo-db
     restart: unless-stopped

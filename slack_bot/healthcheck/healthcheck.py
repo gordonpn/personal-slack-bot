@@ -18,8 +18,6 @@ class HealthCheck:
     def ping_status(status: Status):
         if "DEV_RUN" in os.environ:
             return
-        if "SCRAPER_HC_UUID" not in os.environ:
-            raise EnvironmentError("Missing SCRAPER_HC_UUID")
-        requests.get(
-            f"https://hc-ping.com/{os.getenv('SCRAPER_HC_UUID')}{status.value}"
-        )
+        if "SLACK_HC_UUID" not in os.environ:
+            raise EnvironmentError("Missing SLACK_HC_UUID")
+        requests.get(f"https://hc-ping.com/{os.getenv('SLACK_HC_UUID')}{status.value}")
