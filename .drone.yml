@@ -1,0 +1,90 @@
+---
+kind: pipeline
+type: docker
+name: deploy
+
+steps:
+  - name: slack before
+    image: plugins/slack
+    settings:
+      channel: drone-ci
+      template: >
+        {{build.event}} on branch {{build.branch}} from repo {{repo.name}}
+
+        build #{{build.number}} started!
+
+        {{build.link}}
+      webhook:
+        from_secret: SLACK_WEBHOOK_URL
+  - name: run dev
+    image: docker/compose:1.25.5
+    when:
+      branch: develop
+    environment:
+      DEV_RUN: true
+      BOT_CHANNEL:
+        from_secret: BOT_CHANNEL
+      BOT_ID:
+        from_secret: BOT_ID
+      MONGO_COLLECTION:
+        from_secret: MONGO_COLLECTION
+      MONGO_INITDB_DATABASE:
+        from_secret: MONGO_INITDB_DATABASE
+      MONGO_INITDB_ROOT_PASSWORD:
+        from_secret: MONGO_INITDB_ROOT_PASSWORD
+      MONGO_INITDB_ROOT_USERNAME:
+        from_secret: MONGO_INITDB_ROOT_USERNAME
+      MONGO_NON_ROOT_PASSWORD:
+        from_secret: MONGO_NON_ROOT_PASSWORD
+      MONGO_NON_ROOT_USERNAME:
+        from_secret: MONGO_NON_ROOT_USERNAME
+      MONGO_SETTINGS:
+        from_secret: MONGO_SETTINGS
+      REDDIT_CLIENT_ID:
+        from_secret: REDDIT_CLIENT_ID
+      REDDIT_CLIENT_SECRET:
+        from_secret: REDDIT_CLIENT_SECRET
+      REDDIT_PASSWORD:
+        from_secret: REDDIT_PASSWORD
+      REDDIT_USERNAME:
+        from_secret: REDDIT_USERNAME
+      SCRAPER_HC_UUID:
+        from_secret: SCRAPER_HC_UUID
+      SLACK_HC_UUID:
+        from_secret: SLACK_HC_UUID
+      SLACK_TOKEN:
+        from_secret: SLACK_TOKEN
+      USER_ID:
+        from_secret: USER_ID
+      COMPOSE_PROJECT_NAME: slack_bot
+    volumes:
+      - name: dockersock
+        path: /var/run/docker.sock
+    commands:
+      - docker-compose -f /drone/src/docker-compose.dev.yml up --detach --build
+  - name: slack after
+    image: plugins/slack
+    settings:
+      channel: drone-ci
+      template: >
+        {{repo.name}}:
+        {{#success build.status}}
+        build #{{build.number}} succeeded!
+        {{else}}
+        build #{{build.number}} failed!
+        {{/success}}
+      webhook:
+        from_secret: SLACK_WEBHOOK_URL
+    when:
+      status: [ success, failure ]
+
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
+
+trigger:
+  event: push
+  branch:
+    - master
+    - develop
