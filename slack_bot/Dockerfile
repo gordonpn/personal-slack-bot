@@ -1,4 +1,4 @@
-FROM python:alpine
+FROM python:3.8-alpine
 
 COPY requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
@@ -9,4 +9,4 @@ USER appuser
 
 COPY . .
 
-CMD ["python"]
+CMD ["python", "./main.py"]
