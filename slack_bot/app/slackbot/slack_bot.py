@@ -61,12 +61,12 @@ class Bot:
         cursor: Cursor = collection.find_one()
         if cursor is None:
             res = collection.insert_one({"subreddits": [subreddit]})
-            if type(res.inserted_id) == int:
+            if res.acknowledged:
                 self.reply(f"Successfully subscribed to {subreddit}")
             else:
                 self.reply(f"Unsuccessfully subscribed to {subreddit}")
             return
-        doc_id: int = dumps(cursor).get("_id")
+        doc_id: str = cursor["_id"]
         res = collection.find_one_and_update(
             filter={"_id": doc_id}, update={"$push": {"subreddits": subreddit}}
         )
@@ -82,7 +82,7 @@ class Bot:
         if cursor is None:
             self.reply("You are not currently subscribed to any subreddit")
             return
-        doc_id: int = dumps(cursor).get("_id")
+        doc_id: str = cursor["_id"]
         res = collection.find_one_and_update(
             filter={"_id": doc_id}, update={"$pull": {"subreddits": subreddit}}
         )
@@ -98,8 +98,7 @@ class Bot:
         if cursor is None:
             self.reply("You are currently not subscribed to any subreddits")
             return
-        doc: Dict[str, Any] = dumps(cursor)
-        subs: List[str] = doc.get("subreddits", [])
+        subs: List[str] = cursor["subreddits"]
         self.reply(f"You are subscribed to {', '.join(subs)}")
 
     def reddit_watch(self) -> None:
