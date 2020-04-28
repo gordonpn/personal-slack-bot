@@ -43,15 +43,14 @@ class Bot:
         )
 
     def parse_command(self, text_match: Match):
-        command: str = text_match.group(2)
-        if command == "subs":
+        if text_match.group(7) == "subs":
             self.list_subscriptions()
         else:
-            subreddit_name: str = text_match.group(3)
+            subreddit_name: str = text_match.group(4)
 
-            if command == "sub":
+            if text_match.group(3) == "sub":
                 self.subscribe(subreddit_name)
-            elif command == "unsub":
+            elif text_match.group(3) == "unsub":
                 self.unsubscribe(subreddit_name)
 
     def subscribe(self, subreddit: str) -> None:

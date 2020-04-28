@@ -28,6 +28,7 @@ def reply_bot(**payload):
         if match is None:
             bot.reply("Invalid syntax\nSyntax: reddit [sub|unsub|subs] [SUBREDDIT]")
         else:
+            logger.debug(f"{match.groups()=}")
             concurrent.futures.ThreadPoolExecutor().submit(bot.parse_command, match)
 
 
