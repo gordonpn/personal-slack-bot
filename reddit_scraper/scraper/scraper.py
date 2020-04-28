@@ -48,7 +48,7 @@ class RedditScraper:
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")
-        uri: str = f"mongodb://{self.db_username}:{self.db_password}@mongo-db:27017/{self.db_name}"
+        uri: str = f"mongodb://{self.db_username}:{self.db_password}@slack-bot_mongo-db:27017/{self.db_name}"
         connection: MongoClient = MongoClient(uri)
         db: Database = connection[self.db_name]
         return db

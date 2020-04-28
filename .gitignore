@@ -305,3 +305,4 @@ posts.json
 bot.conf
 venv/
 .mypy_cache/
+.env

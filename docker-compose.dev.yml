@@ -3,7 +3,7 @@ services:
 
   mongo-db:
     image: mongo:latest
-    container_name: mongo-db
+    container_name: slack-bot_mongo-db
     environment:
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
