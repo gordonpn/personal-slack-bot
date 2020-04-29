@@ -57,7 +57,7 @@ steps:
         from_secret: SLACK_TOKEN
       USER_ID:
         from_secret: USER_ID
-      COMPOSE_PROJECT_NAME: slack-bot
+      COMPOSE_PROJECT_NAME: slack-bot-dev
       TZ: America/Montreal
     volumes:
       - name: dockersock
