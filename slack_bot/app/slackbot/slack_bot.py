@@ -2,6 +2,7 @@ import concurrent.futures
 import logging
 import os
 import time
+import json
 from re import Match
 from typing import Any, Dict, List
 
@@ -119,14 +120,13 @@ class Bot:
     def check_subscriptions(self) -> List[str]:
         logger.debug("Checking subscriptions")
         collection = self.get_data_collection()
-        cursor: Cursor = collection.find(filter={"seen": "false"})
-        logger.debug(f"{cursor=}")
+        cursor: Cursor = collection.find(filter={"seen": {"$ne": "true"}})
+        # logger.debug(f"{dumps(cursor)=}")
         if cursor is None:
             return []
-        documents = dumps(cursor)
-        if type(documents) != list:
-            return self.format_message(list(documents))
-        return self.format_message(documents)
+        # documents = json.loads(dumps(cursor))
+        # logger.debug(document)
+        return self.format_message(cursor)
 
     def validate_subreddit(self, subreddit: str) -> bool:
         res: Response = requests.head(url=f"https://reddit.com/r/{subreddit}")
@@ -135,10 +135,11 @@ class Bot:
     def format_message(self, posts: List[RedditPost]) -> List[str]:
         formatted_list: List[str] = []
         for post in posts:
-            if post.is_self:
-                string = f"{post.title} posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.post_id}>"
+            logger.debug(f"Formatting {post=}")
+            if post["is_self"]:
+                string = f"{post['title']} posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}>"
             else:
-                string = f"<{post.link}|{post.title}> posted in <https://www.reddit.com/r/{post.subreddit}|{post.subreddit}>\n<https://redd.it/{post.post_id}> "
+                string = f"<{post['link']}|{post['title']}> posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}> "
             formatted_list.append(string)
         return formatted_list
 
