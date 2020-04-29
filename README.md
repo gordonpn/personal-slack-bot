@@ -18,6 +18,16 @@ First, the scraper gets data periodically from reddit and interacts only with th
 
 Second, the real-time slack bot answers to commands to subscribe or unsubscribe to certain subreddits. As well as sending direct messages to the user about new hot posts.
 
+## How It Works
+
+My goal is to make the bot interactive as well as send the user real-time hot posts from Reddit.
+
+Commands such as `reddit sub python` can be used to subscribe to /r/python. Likewise, `unsub` is the keyword to unsubscribe. To list the subreddits you are subscribed to, you can use `reddit subs`.
+
+## Screenshot
+
+![Screenshot](./docs/screenshot.png)
+
 ## Prerequisites
 
 You need:
