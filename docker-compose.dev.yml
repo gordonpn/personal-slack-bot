@@ -1,7 +1,7 @@
 version: '3.8'
 services:
 
-  mongo-db:
+  slack-bot_mongo-db-dev:
     image: mongo:latest
     container_name: slack-bot_mongo-db-dev
     environment:
