@@ -63,7 +63,6 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - chmod o+rw /drone/src/.docker/docker-entrypoint-initdb.d/create-appuser.sh
       - docker-compose -f /drone/src/docker-compose.yml down
       - docker-compose -f /drone/src/docker-compose.dev.yml up --detach --build
   - name: deploy prod
@@ -112,7 +111,6 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - chmod o+rw /drone/src/.docker/docker-entrypoint-initdb.d/create-appuser.sh
       - docker-compose -f /drone/src/docker-compose.dev.yml down
       - docker-compose -f /drone/src/docker-compose.yml up --detach --build
   - name: slack after

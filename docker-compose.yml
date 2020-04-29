@@ -1,7 +1,7 @@
 version: '3.8'
 services:
 
-  mongo-db:
+  slack-bot_mongo-db:
     image: mongo:latest
     container_name: slack-bot_mongo-db
     environment:
@@ -37,7 +37,7 @@ services:
       - SCRAPER_HC_UUID
       - TZ
     depends_on:
-      - mongo-db
+      - slack-bot_mongo-db
     restart: unless-stopped
 
   slack-bot:
@@ -58,7 +58,7 @@ services:
       - SLACK_HC_UUID
       - TZ
     depends_on:
-      - mongo-db
+      - slack-bot_mongo-db
     restart: unless-stopped
 
 volumes:
