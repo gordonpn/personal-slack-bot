@@ -120,28 +120,27 @@ class Bot:
     def check_subscriptions(self) -> List[str]:
         logger.debug("Checking subscriptions")
         collection = self.get_data_collection()
-        cursor: Cursor = collection.find(filter={"seen": {"$ne": "true"}})
-        # logger.debug(f"{dumps(cursor)=}")
+        cursor: Cursor = collection.find(filter={"seen": {"$eq": False}})
         if cursor is None:
             return []
-        # documents = json.loads(dumps(cursor))
-        # logger.debug(document)
-        return self.format_message(cursor)
+        messages: List[str] = []
+        for doc in cursor:
+            logger.debug(doc)
+            messages.append(self.format_message(doc))
+            _id: str = doc["_id"]
+            collection.find_one_and_update(filter={"_id": _id}, update={"$set": {"seen": True}})
+        return messages
 
     def validate_subreddit(self, subreddit: str) -> bool:
         res: Response = requests.head(url=f"https://reddit.com/r/{subreddit}")
         return bool(res.ok)
 
-    def format_message(self, posts: List[RedditPost]) -> List[str]:
-        formatted_list: List[str] = []
-        for post in posts:
-            logger.debug(f"Formatting {post=}")
-            if post["is_self"]:
-                string = f"{post['title']} posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}>"
-            else:
-                string = f"<{post['link']}|{post['title']}> posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}> "
-            formatted_list.append(string)
-        return formatted_list
+    def format_message(self, post) -> str:
+        if post["is_self"]:
+            string = f"{post['title']} posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}>"
+        else:
+            string = f"<{post['link']}|{post['title']}> posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}> "
+        return string
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")
