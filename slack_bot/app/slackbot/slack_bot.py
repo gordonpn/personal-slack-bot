@@ -2,21 +2,17 @@ import concurrent.futures
 import logging
 import os
 import time
-import json
 from re import Match
-from typing import Any, Dict, List
-
-from bson.json_util import dumps
-from pymongo.cursor import Cursor
-from requests import Response
+from typing import List
 
 import requests
 from pymongo import MongoClient
 from pymongo.collection import Collection
+from pymongo.cursor import Cursor
 from pymongo.database import Database
+from requests import Response
 
 from ..healthcheck.healthcheck import HealthCheck, Status
-from ..reddit_post.reddit_post import RedditPost
 
 logger = logging.getLogger("slack_bot")
 
@@ -128,7 +124,9 @@ class Bot:
             logger.debug(doc)
             messages.append(self.format_message(doc))
             _id: str = doc["_id"]
-            collection.find_one_and_update(filter={"_id": _id}, update={"$set": {"seen": True}})
+            collection.find_one_and_update(
+                filter={"_id": _id}, update={"$set": {"seen": True}}
+            )
         return messages
 
     def validate_subreddit(self, subreddit: str) -> bool:
@@ -144,7 +142,11 @@ class Bot:
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")
-        uri: str = f"mongodb://{self.db_username}:{self.db_password}@slack-bot_mongo-db:27017/{self.db_name}"
+        if "DEV_RUN" in os.environ:
+            host = "slack-bot_mongo-db-dev"
+        else:
+            host = "slack-bot_mongo-db"
+        uri: str = f"mongodb://{self.db_username}:{self.db_password}@{host}:27017/{self.db_name}"
         connection: MongoClient = MongoClient(uri)
         db: Database = connection[self.db_name]
         return db
