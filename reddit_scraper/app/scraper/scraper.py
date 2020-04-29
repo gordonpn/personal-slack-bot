@@ -1,11 +1,10 @@
+import json
 import logging
 import os
 import time
-import json
 from typing import List
 
 import praw
-from bson.json_util import dumps
 from praw import Reddit
 from praw.models import ListingGenerator
 from pymongo import MongoClient
@@ -48,7 +47,11 @@ class RedditScraper:
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")
-        uri: str = f"mongodb://{self.db_username}:{self.db_password}@slack-bot_mongo-db:27017/{self.db_name}"
+        if "DEV_RUN" in os.environ:
+            host = "slack-bot_mongo-db-dev"
+        else:
+            host = "slack-bot_mongo-db"
+        uri: str = f"mongodb://{self.db_username}:{self.db_password}@{host}:27017/{self.db_name}"
         connection: MongoClient = MongoClient(uri)
         db: Database = connection[self.db_name]
         return db
@@ -116,9 +119,7 @@ class RedditScraper:
             query = {"post_id": post.post_id}
             data = json.loads(post.to_json())
             res = collection.find_one_and_update(
-                filter=query, 
-                update={"$set": data},
-                upsert=True
+                filter=query, update={"$set": data}, upsert=True
             )
             logger.debug(f"{res=}")
 
