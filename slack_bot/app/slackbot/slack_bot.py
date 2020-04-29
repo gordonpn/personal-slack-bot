@@ -117,8 +117,10 @@ class Bot:
         self.reddit_watch()
 
     def check_subscriptions(self) -> List[str]:
+        logger.debug("Checking subscriptions")
         collection = self.get_data_collection()
-        cursor: Cursor = collection.find(filter={"unseen": True})
+        cursor: Cursor = collection.find(filter={"seen": "false"})
+        logger.debug(f"{cursor=}")
         if cursor is None:
             return []
         documents = dumps(cursor)

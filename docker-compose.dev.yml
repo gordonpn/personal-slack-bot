@@ -11,6 +11,7 @@ services:
       - MONGO_NON_ROOT_ROLE=readWrite
       - MONGO_NON_ROOT_USERNAME
       - MONGO_NON_ROOT_PASSWORD
+      - TZ
     expose:
       - 27017
     volumes:
@@ -35,6 +36,7 @@ services:
       - REDDIT_USERNAME
       - SCRAPER_HC_UUID
       - DEV_RUN
+      - TZ
     depends_on:
       - mongo-db
     restart: unless-stopped
@@ -56,6 +58,7 @@ services:
       - MONGO_SETTINGS
       - SLACK_HC_UUID
       - DEV_RUN
+      - TZ
     depends_on:
       - mongo-db
     restart: unless-stopped

@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import json
 from typing import List
 
 import praw
@@ -31,11 +32,10 @@ class RedditScraper:
         self.db_collection = os.getenv("MONGO_COLLECTION")
 
     def run(self):
-        db = self.connect_to_db()
-        subscriptions = self.check_subscriptions(db)
+        subscriptions = self.check_subscriptions()
         reddit = self.get_reddit()
         posts = self.scrape(reddit, subscriptions)
-        self.update_db(db, posts)
+        self.update_db(posts)
 
     def get_reddit(self) -> Reddit:
         return praw.Reddit(
@@ -53,22 +53,34 @@ class RedditScraper:
         db: Database = connection[self.db_name]
         return db
 
-    def check_subscriptions(self, db: Database) -> List[str]:
-        collection: Collection = db[self.db_settings]
-        doc: Cursor = collection.find_one()
+    def get_settings_collection(self) -> Collection:
+        db = self.connect_to_db()
+        return db.collection[self.db_settings]
 
-        if doc is None:
+    def get_data_collection(self) -> Collection:
+        db = self.connect_to_db()
+        return db.collection[self.db_collection]
+
+    def check_subscriptions(self) -> List[str]:
+        logger.debug("Checking subscriptions")
+        collection = self.get_settings_collection()
+        cursor: Cursor = collection.find_one()
+        logger.debug(f"{cursor=}")
+
+        if cursor is None:
             return []
-
-        configs = dumps(doc)
-        return configs.get("subreddits", [])
+        subs: List[str] = cursor["subreddits"]
+        logger.debug(f"{subs=}")
+        return subs
 
     def scrape(self, reddit: Reddit, subscriptions: List[str]) -> List[RedditPost]:
+        logger.debug("Scraping Reddit for hot posts")
         limit: int = 5
         time_filter: str = "day"
         reddit_posts: List[RedditPost] = []
 
         for subscription in subscriptions:
+            logger.debug(f"{subscription=}")
             submissions: ListingGenerator = reddit.subreddit(subscription).top(
                 limit=limit, time_filter=time_filter
             )
@@ -81,7 +93,7 @@ class RedditScraper:
                 link = submission.url
                 is_self = submission.is_self
                 unix_time = int(submission.created_utc)
-                logger.debug(f"Parsing: post_id={post_id}")
+                logger.debug(f"Parsing: {post_id=}")
                 a_reddit_post = RedditPost(
                     title=title,
                     subreddit=subscription,
@@ -96,16 +108,23 @@ class RedditScraper:
 
         return reddit_posts
 
-    def update_db(self, db: Database, posts: List[RedditPost]):
-        collection: Collection = db[self.db_collection]
+    def update_db(self, posts: List[RedditPost]):
+        logger.debug("Updating scrapings collections")
+        collection = self.get_data_collection()
 
         for post in posts:
-            collection.update_one(
-                filter={"post_id": post.post_id}, update=post.to_json(), upsert=True
+            query = {"post_id": post.post_id}
+            data = json.loads(post.to_json())
+            res = collection.find_one_and_update(
+                filter=query, 
+                update={"$set": data},
+                upsert=True
             )
+            logger.debug(f"{res=}")
 
-    def clean_up_old(self, db: Database):
-        collection: Collection = db[self.db_collection]
+    def clean_up_old(self):
+        logger.debug("Cleaning up old posts")
+        collection = self.get_data_collection()
 
         two_months: int = 5184000
         unix_time_now: int = int(time.time())

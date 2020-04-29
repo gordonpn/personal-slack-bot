@@ -1,5 +1,6 @@
 import logging
 import time
+import os
 from logging.config import fileConfig
 
 import schedule
@@ -24,7 +25,10 @@ def job():
 
 def start_schedule():
     logger.debug("Setting schedule")
-    schedule.every(10).to(20).minutes.do(job)
+    if "DEV_RUN" in os.environ:
+        schedule.every(1).minutes.do(job)
+    else:
+        schedule.every(10).to(20).minutes.do(job)
 
     logger.debug("Pending scheduled job")
     while True:
