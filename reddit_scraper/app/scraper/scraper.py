@@ -8,7 +8,7 @@ import praw
 from praw import Reddit
 from praw.models import ListingGenerator
 from pymongo import MongoClient
-from pymongo.collection import Collection
+from pymongo.collection import Collection, ReturnDocument
 from pymongo.cursor import Cursor
 from pymongo.database import Database
 
@@ -117,11 +117,22 @@ class RedditScraper:
 
         for post in posts:
             query = {"post_id": post.post_id}
+            logger.debug(f"Looking for {query}")
             data = json.loads(post.to_json())
-            res = collection.find_one_and_update(
-                filter=query, update={"$set": data}, upsert=True
-            )
-            logger.debug(f"{res=}")
+            res = collection.find_one(filter=query)
+            if res is None:
+                logger.debug(f"Did not find {query}, inserting one")
+                result = collection.insert_one(document=data)
+                logger.debug(f"Insertion ID: {result.inserted_id}")
+            else:
+                logger.debug(f"Found {query}, updating one")
+                data.pop("seen", None)
+                result = collection.find_one_and_update(
+                    filter=query,
+                    update={"$set": data},
+                    return_document=ReturnDocument.AFTER,
+                )
+                logger.debug(f"Update result: {result}")
 
     def clean_up_old(self):
         logger.debug("Cleaning up old posts")
