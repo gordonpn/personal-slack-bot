@@ -63,7 +63,7 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - docker-compose -f /drone/src/docker-compose.yml down
+      - docker-compose -f /drone/src/docker-compose.yml down --remove-orphans
       - docker-compose -f /drone/src/docker-compose.dev.yml up --detach --build
   - name: deploy prod
     image: docker/compose:1.25.5
@@ -111,7 +111,7 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - docker-compose -f /drone/src/docker-compose.dev.yml down
+      - docker-compose -f /drone/src/docker-compose.dev.yml down --remove-orphans
       - docker-compose -f /drone/src/docker-compose.yml up --detach --build
   - name: slack after
     image: plugins/slack
