@@ -5,7 +5,7 @@
 I created this project because I wanted to be notified of hot new posts on select subreddits at a timely manner.
 
 ---
-[![Build Status](https://drone.gordon-pn.com/api/badges/gordonpn/personal-slack-bot/status.svg?ref=refs/heads/develop)](https://drone.gordon-pn.com/gordonpn/personal-slack-bot)
+[![Build Status](https://drone.gordon-pn.com/api/badges/gordonpn/reddit-slack-bot/status.svg?ref=refs/heads/develop)](https://drone.gordon-pn.com/gordonpn/reddit-slack-bot)
 ![Healthchecks.io](https://healthchecks.io/badge/ca24ff5d-8821-4d86-8a5a-dc92cf/kCadkBM0.svg)
 ![Last commit on develop](https://badgen.net/github/last-commit/gordonpn/reddit-slack-bot/develop)
 ![License](https://badgen.net/github/license/gordonpn/reddit-slack-bot)
