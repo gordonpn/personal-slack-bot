@@ -1,65 +1,24 @@
 version: '3.8'
 services:
 
-  slack-bot_mongo-db-dev:
-    image: mongo:latest
+  slack-bot_mongo-db:
     container_name: slack-bot_mongo-db-dev
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME
-      - MONGO_INITDB_ROOT_PASSWORD
-      - MONGO_INITDB_DATABASE
-      - MONGO_NON_ROOT_ROLE=readWrite
-      - MONGO_NON_ROOT_USERNAME
-      - MONGO_NON_ROOT_PASSWORD
-      - TZ
-    expose:
-      - 27017
     volumes:
       - dev-mongodb-slackbot:/data/db
-      - ./.docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
-    restart: unless-stopped
 
   reddit-scraper:
     container_name: reddit-scraper-dev
-    build:
-      context: ./reddit_scraper
-      dockerfile: Dockerfile
     environment:
-      - MONGO_COLLECTION
-      - MONGO_INITDB_DATABASE
-      - MONGO_NON_ROOT_PASSWORD
-      - MONGO_NON_ROOT_USERNAME
-      - MONGO_SETTINGS
-      - REDDIT_CLIENT_ID
-      - REDDIT_CLIENT_SECRET
-      - REDDIT_PASSWORD
-      - REDDIT_USERNAME
-      - SCRAPER_HC_UUID
       - DEV_RUN
-      - TZ
     depends_on:
-      - slack-bot_mongo-db-dev
+      - slack-bot_mongo-db
 
   slack-bot:
     container_name: slack-bot-dev
-    build:
-      context: ./slack_bot
-      dockerfile: Dockerfile
     environment:
-      - SLACK_TOKEN
-      - BOT_ID
-      - BOT_CHANNEL
-      - USER_ID
-      - MONGO_INITDB_DATABASE
-      - MONGO_NON_ROOT_USERNAME
-      - MONGO_NON_ROOT_PASSWORD
-      - MONGO_COLLECTION
-      - MONGO_SETTINGS
-      - SLACK_HC_UUID
       - DEV_RUN
-      - TZ
     depends_on:
-      - slack-bot_mongo-db-dev
+      - slack-bot_mongo-db
 
 volumes:
   dev-mongodb-slackbot:

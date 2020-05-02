@@ -3,7 +3,6 @@ services:
 
   slack-bot_mongo-db:
     image: mongo:latest
-    container_name: slack-bot_mongo-db
     environment:
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
@@ -15,12 +14,10 @@ services:
     expose:
       - 27017
     volumes:
-      - mongodb-slackbot:/data/db
       - ./.docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
   reddit-scraper:
-    container_name: reddit-scraper
     build:
       context: ./reddit_scraper
       dockerfile: Dockerfile
@@ -36,12 +33,7 @@ services:
       - REDDIT_USERNAME
       - SCRAPER_HC_UUID
       - TZ
-    depends_on:
-      - slack-bot_mongo-db
-    restart: unless-stopped
-
   slack-bot:
-    container_name: slack-bot
     build:
       context: ./slack_bot
       dockerfile: Dockerfile
@@ -57,11 +49,3 @@ services:
       - MONGO_SETTINGS
       - SLACK_HC_UUID
       - TZ
-    depends_on:
-      - slack-bot_mongo-db
-    restart: unless-stopped
-
-volumes:
-  mongodb-slackbot:
-    external:
-      name: mongodb-slackbot

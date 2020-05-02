@@ -47,10 +47,7 @@ class RedditScraper:
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")
-        if "DEV_RUN" in os.environ:
-            host = "slack-bot_mongo-db-dev"
-        else:
-            host = "slack-bot_mongo-db"
+        host = "slack-bot_mongo-db"
         uri: str = f"mongodb://{self.db_username}:{self.db_password}@{host}:27017/{self.db_name}"
         connection: MongoClient = MongoClient(uri)
         db: Database = connection[self.db_name]
