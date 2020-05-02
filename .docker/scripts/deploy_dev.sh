@@ -1,4 +1,5 @@
 #!/bin/sh
+set -euo pipefail
 docker container stop slack-bot_mongo-db
 docker container stop reddit-scraper
 docker container stop slack-bot
