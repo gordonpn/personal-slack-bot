@@ -5,6 +5,8 @@ import time
 from re import Match
 from typing import List
 
+import schedule
+
 import requests
 from pymongo import MongoClient
 from pymongo.collection import Collection
@@ -99,6 +101,18 @@ class Bot:
         self.reply(f"You are subscribed to {', '.join(subs)}")
 
     def reddit_watch(self) -> None:
+        logger.debug("Setting schedule")
+        if "DEV_RUN" in os.environ:
+            schedule.every(1).minutes.do(self.reddit_watch_job)
+        else:
+            schedule.every(30).to(40).minutes.do(self.reddit_watch_job)
+
+        logger.debug("Pending scheduled job")
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
+    def reddit_watch_job(self) -> None:
         HealthCheck.ping_status(Status.START)
         logger.debug("Checking database for unseen posts")
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -110,8 +124,6 @@ class Bot:
                 self.reply(a_message)
                 time.sleep(3)
         HealthCheck.ping_status(Status.SUCCESS)
-        time.sleep(30 * 60)
-        self.reddit_watch()
 
     def check_subscriptions(self) -> List[str]:
         logger.debug("Checking subscriptions")
