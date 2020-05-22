@@ -33,6 +33,9 @@ services:
       - REDDIT_USERNAME
       - SCRAPER_HC_UUID
       - TZ
+    depends_on:
+      - slack-bot_mongo-db
+
   slack-bot:
     build:
       context: ./slack_bot
@@ -49,3 +52,5 @@ services:
       - MONGO_SETTINGS
       - SLACK_HC_UUID
       - TZ
+    depends_on:
+      - slack-bot_mongo-db

@@ -10,15 +10,11 @@ services:
     container_name: reddit-scraper-dev
     environment:
       - DEV_RUN
-    depends_on:
-      - slack-bot_mongo-db
 
   slack-bot:
     container_name: slack-bot-dev
     environment:
       - DEV_RUN
-    depends_on:
-      - slack-bot_mongo-db
 
 volumes:
   dev-mongodb-slackbot:

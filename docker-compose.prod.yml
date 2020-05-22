@@ -8,14 +8,10 @@ services:
 
   reddit-scraper:
     container_name: reddit-scraper
-    depends_on:
-      - slack-bot_mongo-db
     restart: unless-stopped
 
   slack-bot:
     container_name: slack-bot
-    depends_on:
-      - slack-bot_mongo-db
     restart: unless-stopped
 
 volumes:
