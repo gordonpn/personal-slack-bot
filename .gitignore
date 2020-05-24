@@ -306,3 +306,4 @@ bot.conf
 venv/
 .mypy_cache/
 .env
+**/.idea

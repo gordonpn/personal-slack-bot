@@ -1,4 +1,4 @@
-praw~=6.5.1
-pymongo~=3.10.1
-requests~=2.23
-schedule~=0.6.0
+praw==6.5.1
+pymongo==3.10.1
+requests==2.23.0
+schedule==0.6.0
