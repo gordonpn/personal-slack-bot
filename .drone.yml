@@ -54,7 +54,7 @@ steps:
       - cd ./slack_bot
       - pip install safety
       - safety check
-      - safety check -r requirements.tx
+      - safety check -r requirements.txt
   - name: slack after test
     image: plugins/slack
     failure: ignore
@@ -128,57 +128,8 @@ trigger:
     - push
   branch:
     - master
-    - develop
 
 steps:
-  - name: deploy dev
-    image: docker/compose:1.25.5
-    when:
-      branch:
-        - develop
-    environment:
-      DEV_RUN: "true"
-      BOT_CHANNEL:
-        from_secret: BOT_CHANNEL
-      BOT_ID:
-        from_secret: BOT_ID
-      MONGO_COLLECTION:
-        from_secret: MONGO_COLLECTION
-      MONGO_INITDB_DATABASE:
-        from_secret: MONGO_INITDB_DATABASE
-      MONGO_INITDB_ROOT_PASSWORD:
-        from_secret: MONGO_INITDB_ROOT_PASSWORD
-      MONGO_INITDB_ROOT_USERNAME:
-        from_secret: MONGO_INITDB_ROOT_USERNAME
-      MONGO_NON_ROOT_PASSWORD:
-        from_secret: MONGO_NON_ROOT_PASSWORD
-      MONGO_NON_ROOT_USERNAME:
-        from_secret: MONGO_NON_ROOT_USERNAME
-      MONGO_SETTINGS:
-        from_secret: MONGO_SETTINGS
-      REDDIT_CLIENT_ID:
-        from_secret: REDDIT_CLIENT_ID
-      REDDIT_CLIENT_SECRET:
-        from_secret: REDDIT_CLIENT_SECRET
-      REDDIT_PASSWORD:
-        from_secret: REDDIT_PASSWORD
-      REDDIT_USERNAME:
-        from_secret: REDDIT_USERNAME
-      SCRAPER_HC_UUID:
-        from_secret: SCRAPER_HC_UUID
-      SLACK_HC_UUID:
-        from_secret: SLACK_HC_UUID
-      SLACK_TOKEN:
-        from_secret: SLACK_TOKEN
-      USER_ID:
-        from_secret: USER_ID
-      COMPOSE_PROJECT_NAME: slack-bot-dev
-      TZ: America/Montreal
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - /bin/sh /drone/src/.docker/scripts/deploy_dev.sh
   - name: deploy prod
     image: docker/compose:1.25.5
     when:
