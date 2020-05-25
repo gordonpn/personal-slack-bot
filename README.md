@@ -10,6 +10,8 @@ I created this project because I wanted to be notified of hot new posts on selec
 ![Last commit on develop](https://badgen.net/github/last-commit/gordonpn/reddit-slack-bot/develop)
 ![License](https://badgen.net/github/license/gordonpn/reddit-slack-bot)
 
+[![Buy Me A Coffee](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/gordonpn)
+
 ## Description
 
 The project is split into two docker images, one is an API scraper and the other is the real-time slack bot.
