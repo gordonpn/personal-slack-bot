@@ -84,22 +84,13 @@ trigger:
       - master
 
 steps:
-  - name: build scraper image
-    image: docker
+  - name: build images
+    image: docker/compose:1.25.5
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - cd ./reddit_scraper
-      - docker image build .
-  - name: build bot image
-    image: docker
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - cd ./slack_bot
-      - docker image build .
+      - docker-compose -f /drone/src/docker-compose.yml -f /drone/src/docker-compose.prod.yml build
   - name: slack after docker image build
     image: plugins/slack
     settings:
@@ -135,9 +126,6 @@ trigger:
 steps:
   - name: deploy prod
     image: docker/compose:1.25.5
-    when:
-      branch:
-        - master
     environment:
       BOT_CHANNEL:
         from_secret: BOT_CHANNEL
