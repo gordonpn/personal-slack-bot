@@ -4,7 +4,7 @@ type: docker
 name: notification
 
 trigger:
-  event: [ push ]
+  event: [ push, pull_request ]
 
 steps:
   - name: slack before
@@ -26,7 +26,7 @@ type: docker
 name: security
 
 trigger:
-  event: [ push ]
+  event: [ push, pull_request ]
 
 steps:
   - name: bandit test for scraper
@@ -78,7 +78,10 @@ type: docker
 name: build docker images
 
 trigger:
-  event: [ push ]
+  event: [ push, pull_request ]
+  branch:
+    exclude:
+      - master
 
 steps:
   - name: build scraper image
