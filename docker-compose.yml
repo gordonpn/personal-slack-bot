@@ -1,7 +1,7 @@
 version: '3.8'
 services:
 
-  slack-bot_mongo-db:
+  mongodb:
     image: mongo:latest
     environment:
       - MONGO_INITDB_ROOT_USERNAME
@@ -10,9 +10,7 @@ services:
       - MONGO_NON_ROOT_ROLE=readWrite
       - MONGO_NON_ROOT_USERNAME
       - MONGO_NON_ROOT_PASSWORD
-      - TZ
-    expose:
-      - 27017
+      - TZ=America/Montreal
     volumes:
       - ./.docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     restart: unless-stopped
@@ -32,11 +30,11 @@ services:
       - REDDIT_PASSWORD
       - REDDIT_USERNAME
       - SCRAPER_HC_UUID
-      - TZ
+      - TZ=America/Montreal
     depends_on:
-      - slack-bot_mongo-db
+      - mongodb
 
-  slack-bot:
+  bot:
     build:
       context: ./slack_bot
       dockerfile: Dockerfile
@@ -51,6 +49,6 @@ services:
       - MONGO_COLLECTION
       - MONGO_SETTINGS
       - SLACK_HC_UUID
-      - TZ
+      - TZ=America/Montreal
     depends_on:
-      - slack-bot_mongo-db
+      - mongodb

@@ -1,20 +1,82 @@
 version: '3.8'
 services:
 
-  slack-bot_mongo-db:
-    container_name: slack-bot_mongo-db
+  mongodb:
+    container_name: slack-bot_mongodb
     volumes:
       - mongodb-slackbot:/data/db
+    expose:
+      - 27017
+    networks:
+      - slack-bot-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.labels.main-node == true
 
   reddit-scraper:
     container_name: reddit-scraper
+    image: gordonpn/reddit-scraper:latest
     restart: unless-stopped
+    networks:
+      - slack-bot-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
-  slack-bot:
+  bot:
     container_name: slack-bot
+    image: gordonpn/slack-bot:latest
     restart: unless-stopped
+    networks:
+      - slack-bot-network
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
 volumes:
   mongodb-slackbot:
     external:
       name: mongodb-slackbot
+
+networks:
+  slack-bot-network:
+    driver: overlay

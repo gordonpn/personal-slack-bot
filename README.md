@@ -64,22 +64,15 @@ List of environment variables:
 
 ## Usage
 
-Set the previously described environment variables and run `docker-compose up --detach`
+Set the previously described environment variables and run `docker-compose -f /drone/src/docker-compose.yml -f /drone/src/docker-compose.prod.yml up --detach`
 
-## Roadmap
+## Roadmap / Todo
 
-* [x]  Rewrite in Python
-* [x]  Develop a Slack Bot to communicate the information
-* [x]  Info on uptime
-* [x]  Info on cpu load
-* [x]  Refactor code to make more object-oriented
-* [x]  watch all addresses feature
-* [x]  load from external sources for addresses and jenkins url
-* [x]  refactor for better code maintainability
-* [x]  integrate personalized weather forecasting
-* [x]  return Reddit news on demand only, instead of periodically
-* [x]  Website monitoring feature
-* [x]  Rewrite using Docker and simplify to one task (Reddit)
+Check out the [open issues](https://github.com/gordonpn/reddit-slack-bot/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-desc) for ideas and features I have planned!
+
+## Authors
+
+Myself [@gordonpn](https://github.com/gordonpn)
 
 ## Support
 

@@ -1,17 +1,19 @@
 version: '3.8'
 services:
 
-  slack-bot_mongo-db:
-    container_name: slack-bot_mongo-db-dev
+  mongodb:
+    container_name: slack-bot_mongodb-dev
     volumes:
       - dev-mongodb-slackbot:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"
 
   reddit-scraper:
     container_name: reddit-scraper-dev
     environment:
       - DEV_RUN
 
-  slack-bot:
+  bot:
     container_name: slack-bot-dev
     environment:
       - DEV_RUN

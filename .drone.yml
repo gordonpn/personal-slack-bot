@@ -14,68 +14,19 @@ steps:
       template: >
         {{build.event}} on branch {{build.branch}} from repo {{repo.name}}
 
-        build #{{build.number}} started!
+        build #{{build.number}} started
 
         {{build.link}}
       webhook:
         from_secret: SLACK_WEBHOOK_URL
-
 ---
 kind: pipeline
 type: docker
-name: security
+name: build and publish docker image
 
-trigger:
-  event: [ push, pull_request ]
-
-steps:
-  - name: bandit test for scraper
-    image: python:3.8-buster
-    commands:
-      - cd ./reddit_scraper
-      - pip install bandit
-      - bandit -r ./
-  - name: safety check for scraper
-    image: python:3.8-buster
-    commands:
-      - cd ./reddit_scraper
-      - pip install safety
-      - safety check
-      - safety check -r requirements.txt
-  - name: bandit test for bot
-    image: python:3.8-buster
-    commands:
-      - cd ./slack_bot
-      - pip install bandit
-      - bandit -r ./
-  - name: safety check for bot
-    image: python:3.8-buster
-    commands:
-      - cd ./slack_bot
-      - pip install safety
-      - safety check
-      - safety check -r requirements.txt
-  - name: slack after test
-    image: plugins/slack
-    failure: ignore
-    settings:
-      channel: drone-ci
-      template: >
-        {{repo.name}}:
-        {{#success build.status}}
-        security scan #{{build.number}} succeeded!
-        {{else}}
-        security scan #{{build.number}} failed!
-        {{/success}}
-      webhook:
-        from_secret: SLACK_WEBHOOK_URL
-    when:
-      status: [ success, failure ]
-
----
-kind: pipeline
-type: docker
-name: build docker images
+platform:
+  os: linux
+  arch: amd64
 
 trigger:
   event: [ push, pull_request ]
@@ -84,33 +35,59 @@ trigger:
       - master
 
 steps:
-  - name: build images
-    image: docker/compose:1.25.5
+  - name: publish
+    image: gordonpn/docker-buildx-drone
+    environment:
+      DOCKER_TOKEN:
+        from_secret: DOCKER_TOKEN
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - docker-compose -f /drone/src/docker-compose.yml -f /drone/src/docker-compose.prod.yml build
-  - name: slack after docker image build
-    image: plugins/slack
-    settings:
-      channel: drone-ci
-      template: >
-        {{repo.name}}:
-        {{#success build.status}}
-        docker image build #{{build.number}} succeeded!
-        {{else}}
-        docker image build #{{build.number}} failed!
-        {{/success}}
-      webhook:
-        from_secret: SLACK_WEBHOOK_URL
-    when:
-      status: [ success, failure ]
+      - echo $DOCKER_TOKEN | docker login -u gordonpn --password-stdin
+      - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      - docker buildx rm builder || true
+      - docker buildx create --name builder --driver docker-container --use
+      - docker buildx inspect --bootstrap
+      - cd /drone/src/slack_bot
+      - docker buildx build -t gordonpn/slack-bot:latest --platform linux/amd64,linux/arm64 --push .
+      - cd /drone/src/reddit_scraper
+      - docker buildx build -t gordonpn/reddit-scraper:latest --platform linux/amd64,linux/arm64 --push .
 
 volumes:
   - name: dockersock
     host:
       path: /var/run/docker.sock
+---
+kind: pipeline
+type: docker
+name: security
+
+trigger:
+  event: [ push, pull_request ]
+  branch:
+    exclude:
+      - master
+
+steps:
+  - name: bandit test
+    image: python:3.8-buster
+    commands:
+      - cd ./reddit_scraper
+      - pip install bandit
+      - bandit -r ./
+      - cd ../slack_bot
+      - bandit -r ./
+  - name: safety check
+    image: python:3.8-buster
+    commands:
+      - cd ./reddit_scraper
+      - pip install safety
+      - safety check
+      - safety check -r requirements.txt
+      - cd ../slack_bot
+      - safety check
+      - safety check -r requirements.txt
 
 ---
 kind: pipeline
@@ -161,14 +138,28 @@ steps:
         from_secret: SLACK_TOKEN
       USER_ID:
         from_secret: USER_ID
-      COMPOSE_PROJECT_NAME: slack-bot
       TZ: America/Montreal
     volumes:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - /bin/sh /drone/src/.docker/scripts/deploy_prod.sh
-  - name: slack after deploy
+      - /bin/sh /drone/src/.docker/scripts/deploy.sh
+
+volumes:
+  - name: dockersock
+    host:
+      path: /var/run/docker.sock
+
+---
+kind: pipeline
+type: docker
+name: notification after
+
+trigger:
+  event: [ push, pull_request ]
+
+steps:
+  - name: slack after
     image: plugins/slack
     failure: ignore
     settings:
@@ -176,17 +167,16 @@ steps:
       template: >
         {{repo.name}}:
         {{#success build.status}}
-        build #{{build.number}} succeeded!
+        build #{{build.number}} succeeded
         {{else}}
-        build #{{build.number}} failed!
+        build #{{build.number}} failed
         {{/success}}
       webhook:
         from_secret: SLACK_WEBHOOK_URL
     when:
       status: [ success, failure ]
 
-volumes:
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
-
+depends_on:
+  - build and publish docker image
+  - security
+  - deploy
