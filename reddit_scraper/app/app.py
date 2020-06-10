@@ -18,7 +18,6 @@ def job():
         scraper = RedditScraper()
         scraper.run()
     except Exception:
-        HealthCheck.ping_status(Status.FAIL)
         raise Exception
     HealthCheck.ping_status(Status.SUCCESS)
 
