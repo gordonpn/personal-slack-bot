@@ -12,7 +12,7 @@ services:
       - MONGO_NON_ROOT_PASSWORD
       - TZ=America/Montreal
     volumes:
-      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - ./.docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     restart: unless-stopped
 
   reddit-scraper:

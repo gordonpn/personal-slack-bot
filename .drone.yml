@@ -44,7 +44,7 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - /drone/src/docker/scripts/build.sh
+      - /drone/src/.docker/scripts/build.sh
 
 volumes:
   - name: dockersock
@@ -95,6 +95,10 @@ trigger:
   branch:
     - master
 
+platform:
+  os: linux
+  arch: amd64
+
 steps:
   - name: deploy prod
     image: docker/compose:1.25.5
@@ -138,7 +142,7 @@ steps:
       - name: dockersock
         path: /var/run/docker.sock
     commands:
-      - /drone/src/docker/scripts/deploy.sh
+      - /drone/src/.docker/scripts/deploy.sh
 
 volumes:
   - name: dockersock
