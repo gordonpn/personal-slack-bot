@@ -32,7 +32,7 @@ def start_schedule():
     logger.debug("Pending scheduled job")
     while True:
         schedule.run_pending()
-        time.sleep(1)
+        time.sleep(3 * 60)
 
 
 def run():

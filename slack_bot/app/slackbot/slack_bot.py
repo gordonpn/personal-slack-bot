@@ -105,12 +105,12 @@ class Bot:
         if "DEV_RUN" in os.environ:
             schedule.every(1).minutes.do(self.reddit_watch_job)
         else:
-            schedule.every(30).to(40).minutes.do(self.reddit_watch_job)
+            schedule.every(20).to(30).minutes.do(self.reddit_watch_job)
 
         logger.debug("Pending scheduled job")
         while True:
             schedule.run_pending()
-            time.sleep(1)
+            time.sleep(3 * 60)
 
     def reddit_watch_job(self) -> None:
         HealthCheck.ping_status(Status.START)
