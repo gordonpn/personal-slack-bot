@@ -3,9 +3,11 @@ import logging
 import os
 import re
 import sys
+import time
 from logging.config import fileConfig
 from re import Match
 
+from aiohttp import ClientConnectorError
 from slack import RTMClient
 
 from .slackbot.slack_bot import Bot
@@ -48,5 +50,11 @@ def exit_bot(**payload):
 
 
 def run():
-    rtm_client = RTMClient(token=os.getenv("SLACK_TOKEN"))
-    rtm_client.start()
+    try:
+        rtm_client = RTMClient(token=os.getenv("SLACK_TOKEN"))
+        rtm_client.start()
+    except ClientConnectorError as e:
+        logger.error("Possibly no internet connection available")
+        logger.error(str(e))
+        time.sleep(5 * 60)
+        exit(1)
