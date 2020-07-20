@@ -103,9 +103,8 @@ class Bot:
 
     def reddit_watch(self) -> None:
         logger.debug("Setting schedule")
-        if "DEV_RUN" in os.environ:
-            schedule.every(1).minutes.do(self.reddit_watch_job)
-        else:
+        self.reddit_watch_job()
+        if "DEV_RUN" not in os.environ:
             schedule.every(20).to(30).minutes.do(self.reddit_watch_job)
 
         logger.debug("Pending scheduled job")

@@ -24,9 +24,8 @@ def job():
 
 def start_schedule():
     logger.debug("Setting schedule")
-    if "DEV_RUN" in os.environ:
-        schedule.every(1).minutes.do(job)
-    else:
+    job()
+    if "DEV_RUN" not in os.environ:
         schedule.every(10).to(20).minutes.do(job)
 
     logger.debug("Pending scheduled job")
