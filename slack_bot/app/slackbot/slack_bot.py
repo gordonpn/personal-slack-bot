@@ -1,5 +1,6 @@
 import concurrent.futures
 import logging
+import sys
 import os
 import time
 from re import Match
@@ -158,6 +159,13 @@ class Bot:
         uri: str = f"mongodb://{self.db_username}:{self.db_password}@{host}:27017/{self.db_name}"
         connection: MongoClient = MongoClient(uri)
         db: Database = connection[self.db_name]
+        try:
+            db.command("ping")
+        except Exception as e:
+            logger.error("Error with connection (ping)")
+            logger.error(str(e))
+            time.sleep(10)
+            sys.exit(1)
         return db
 
     def get_settings_collection(self) -> Collection:
