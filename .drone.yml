@@ -4,7 +4,7 @@ type: docker
 name: notification
 
 trigger:
-  event: [ push, pull_request ]
+  event: [push, pull_request]
 
 steps:
   - name: slack before
@@ -29,7 +29,7 @@ platform:
   arch: amd64
 
 trigger:
-  event: [ push, pull_request ]
+  event: [push, pull_request]
   branch:
     exclude:
       - master
@@ -56,7 +56,7 @@ type: docker
 name: security
 
 trigger:
-  event: [ push, pull_request ]
+  event: [push, pull_request]
   branch:
     exclude:
       - master
@@ -148,34 +148,3 @@ volumes:
   - name: dockersock
     host:
       path: /var/run/docker.sock
-
----
-kind: pipeline
-type: docker
-name: notification after
-
-trigger:
-  event: [ push, pull_request ]
-
-steps:
-  - name: slack after
-    image: plugins/slack
-    failure: ignore
-    settings:
-      channel: drone-ci
-      template: >
-        {{repo.name}}:
-        {{#success build.status}}
-        build #{{build.number}} succeeded
-        {{else}}
-        build #{{build.number}} failed
-        {{/success}}
-      webhook:
-        from_secret: SLACK_WEBHOOK_URL
-    when:
-      status: [ success, failure ]
-
-depends_on:
-  - build and publish docker image
-  - security
-  - deploy
