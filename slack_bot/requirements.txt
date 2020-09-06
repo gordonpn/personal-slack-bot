@@ -1,4 +1,4 @@
-pymongo~=3.10.1
+pymongo~=3.11.0
 requests~=2.24.0
 schedule~=0.6.0
-slackclient~=2.7.3
+slackclient~=2.8.2
