@@ -147,7 +147,7 @@ class Bot:
 
     def format_message(self, post) -> str:
         if post["is_self"]:
-            string = f"{post['title']} posted in <https://www.reddit.com/r/{post['subreddit']}|{post['subreddit']}>\n<https://redd.it/{post['post_id']}>"
+            string = f"{post['title']}\n<https://redd.it/{post['post_id']}>"
         else:
             string = f"<{post['link']}|{post['title']}>\n<https://redd.it/{post['post_id']}> "
         return string
