@@ -14,7 +14,7 @@ steps:
       template: >
         {{build.event}} on branch {{build.branch}} from repo {{repo.name}}
 
-        build #{{build.number}} started
+        Build #{{build.number}} started
 
         {{build.link}}
       webhook:
