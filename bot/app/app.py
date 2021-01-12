@@ -8,7 +8,7 @@ from logging.config import fileConfig
 from re import Match
 
 from aiohttp import ClientConnectorError
-from slack import RTMClient
+from slack_sdk.rtm import RTMClient
 
 from .slackbot.slack_bot import Bot
 

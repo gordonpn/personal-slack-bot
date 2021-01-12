@@ -1,8 +1,7 @@
-version: '3.8'
+version: "3.8"
 services:
-
   mongodb:
-    image: mongo:latest
+    image: mongo:4
     environment:
       - MONGO_INITDB_ROOT_USERNAME
       - MONGO_INITDB_ROOT_PASSWORD
@@ -17,7 +16,7 @@ services:
 
   reddit-scraper:
     build:
-      context: ./reddit_scraper
+      context: ./scraper
       dockerfile: Dockerfile
     environment:
       - MONGO_COLLECTION
@@ -36,7 +35,7 @@ services:
 
   bot:
     build:
-      context: ./slack_bot
+      context: ./bot
       dockerfile: Dockerfile
     environment:
       - SLACK_TOKEN

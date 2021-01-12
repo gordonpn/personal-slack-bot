@@ -12,44 +12,14 @@ steps:
     settings:
       channel: drone-ci
       template: >
-        {{build.event}} on branch {{build.branch}} from repo {{repo.name}}
+        {{ uppercasefirst build.event }} on branch {{ build.branch }} from repo {{repo.name}}
 
         Build #{{build.number}} started
 
-        {{build.link}}
+        <{{ build.link }}|Visit build page ➡️>
       webhook:
         from_secret: SLACK_WEBHOOK_URL
----
-kind: pipeline
-type: docker
-name: build and publish docker image
 
-platform:
-  os: linux
-  arch: amd64
-
-trigger:
-  event: [push, pull_request]
-  branch:
-    exclude:
-      - master
-
-steps:
-  - name: publish
-    image: gordonpn/docker-buildx-drone
-    environment:
-      DOCKER_TOKEN:
-        from_secret: DOCKER_TOKEN
-    volumes:
-      - name: dockersock
-        path: /var/run/docker.sock
-    commands:
-      - /drone/src/.docker/scripts/build.sh
-
-volumes:
-  - name: dockersock
-    host:
-      path: /var/run/docker.sock
 ---
 kind: pipeline
 type: docker
@@ -61,26 +31,23 @@ trigger:
     exclude:
       - master
 
-depends_on:
-  - build and publish docker image
-
 steps:
   - name: bandit test
     image: python:3.8-buster
     commands:
-      - cd ./reddit_scraper
+      - cd ./scraper
       - pip install bandit
       - bandit -r ./
-      - cd ../slack_bot
+      - cd ../bot
       - bandit -r ./
   - name: safety check
     image: python:3.8-buster
     commands:
-      - cd ./reddit_scraper
+      - cd ./scraper
       - pip install safety
       - safety check
       - safety check -r requirements.txt
-      - cd ../slack_bot
+      - cd ../bot
       - safety check
       - safety check -r requirements.txt
 
@@ -91,9 +58,9 @@ name: deploy
 
 trigger:
   event:
-    - push
-  branch:
-    - master
+    - promote
+  target:
+    - production
 
 platform:
   os: linux
@@ -143,6 +110,27 @@ steps:
         path: /var/run/docker.sock
     commands:
       - /drone/src/.docker/scripts/deploy.sh
+  - name: slack notification
+    image: plugins/slack
+    failure: ignore
+    settings:
+      channel: drone-ci
+      webhook:
+        from_secret: SLACK_WEBHOOK_URL
+      template: >
+        {{#if build.pull }}
+          *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}*: <https://github.com/{{ repo.owner }}/{{ repo.name }}/pull/{{ build.pull }}|Pull Request #{{ build.pull }}>
+        {{else}}
+          *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}: Build #{{ build.number }}* (type: `{{ build.event }}`)
+        {{/if}}
+
+        Commit: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ truncate build.commit 8 }}>
+
+        Branch: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commits/{{ build.branch }}|{{ build.branch }}>
+
+        Author: {{ build.author }}
+
+        <{{ build.link }}|Visit build page ➡️>
 
 volumes:
   - name: dockersock

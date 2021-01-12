@@ -1,6 +1,5 @@
-version: '3.8'
+version: "3.8"
 services:
-
   mongodb:
     container_name: slack-bot_mongodb-dev
     volumes:
@@ -9,12 +8,12 @@ services:
       - "127.0.0.1:27017:27017"
 
   reddit-scraper:
-    container_name: reddit-scraper-dev
+    container_name: reddit-slack-bot_scraper-dev
     environment:
       - DEV_RUN
 
   bot:
-    container_name: slack-bot-dev
+    container_name: reddit-slack-bot_bot-dev
     environment:
       - DEV_RUN
 

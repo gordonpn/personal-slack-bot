@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   mongodb:
-    container_name: slack-bot_mongodb
+    container_name: reddit-slack-bot_mongodb
     volumes:
       - mongodb-slackbot:/data/db
     expose:
@@ -28,8 +28,8 @@ services:
           - node.labels.main-node == true
 
   reddit-scraper:
-    container_name: reddit-scraper
-    image: gordonpn/reddit-scraper:latest
+    container_name: reddit-slack-bot_scraper
+    image: ghcr.io/gordonpn/reddit-slack-bot_scraper:latest
     restart: unless-stopped
     networks:
       - slack-bot-network
@@ -50,8 +50,8 @@ services:
         window: 120s
 
   bot:
-    container_name: slack-bot
-    image: gordonpn/slack-bot:latest
+    container_name: reddit-slack-bot_bot
+    image: ghcr.io/gordonpn/reddit-slack-bot_bot:latest
     restart: unless-stopped
     networks:
       - slack-bot-network
