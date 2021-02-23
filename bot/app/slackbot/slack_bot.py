@@ -1,14 +1,14 @@
 import concurrent.futures
 import logging
-import sys
 import os
+import sys
 import time
+from datetime import datetime
 from re import Match
 from typing import List
 
-import schedule
-
 import requests
+import schedule
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.cursor import Cursor
@@ -128,7 +128,10 @@ class Bot:
     def check_subscriptions(self) -> List[str]:
         logger.debug("Checking subscriptions")
         collection = self.get_data_collection()
-        cursor: Cursor = collection.find(filter={"seen": {"$eq": False}})
+        a_day_ago: int = int(datetime.now().timestamp()) - 86400
+        cursor: Cursor = collection.find(
+            filter={"seen": {"$eq": False}, "unix_time": {"$lte": a_day_ago}}
+        )
         if cursor is None:
             return []
         messages: List[str] = []
@@ -147,10 +150,9 @@ class Bot:
 
     def format_message(self, post) -> str:
         if post["is_self"]:
-            string = f"{post['title']}\n<https://redd.it/{post['post_id']}>"
+            return f"{post['title']}\n<https://redd.it/{post['post_id']}>"
         else:
-            string = f"<{post['link']}|{post['title']}>\n<https://redd.it/{post['post_id']}> "
-        return string
+            return f"<{post['link']}|{post['title']}>\n<https://redd.it/{post['post_id']}> "
 
     def connect_to_db(self) -> Database:
         logger.debug("Making connection to mongodb")

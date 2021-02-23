@@ -307,3 +307,4 @@ venv/
 .mypy_cache/
 .env
 **/.idea
+.vscode/settings.json
